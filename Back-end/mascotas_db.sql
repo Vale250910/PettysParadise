@@ -229,4 +229,8 @@ CHANGE id_pro id_pro INT(11) NOT NULL COMMENT 'Usuario que solicita la cita (FK)
 CHANGE estado estado ENUM('PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'REALIZADA', 'NO_ASISTIDA') NOT NULL DEFAULT 'PENDIENTE' COMMENT 'Estado actual de la cita',
 CHANGE notas notas TEXT COMMENT 'Notas adicionales sobre la cita';
 
+ALTER TABLE usuarios 
+ADD COLUMN intentos_fallidos INT DEFAULT 0 COMMENT 'Número de intentos fallidos de inicio de sesión',
+ADD COLUMN cuenta_bloqueada BOOLEAN DEFAULT FALSE COMMENT 'Indica si la cuenta está bloqueada',
+ADD COLUMN fecha_bloqueo DATETIME NULL COMMENT 'Fecha y hora cuando la cuenta fue bloqueada';
 

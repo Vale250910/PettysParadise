@@ -10,6 +10,9 @@ import { useState } from "react"
 
 export default function Login() {
   const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
+  const [passwordFocus, setPasswordFocus] = useState(false)
+  const [intentosFallidos, setIntentosFallidos] = useState(0)
 
   const {
     register,
@@ -20,7 +23,6 @@ export default function Login() {
     mode: "onChange", 
   })
   
-  // Función para validar el email con mensajes más descriptivos
   const validateEmail = (value) => {
     if (!value) return "El email es obligatorio";
     if (!value.includes("@")) return "Falta el símbolo @ en el email";
@@ -32,7 +34,6 @@ export default function Login() {
     return true;
   }
 
-  // Función para validar la contraseña con requisitos detallados
   const validatePassword = (value) => {
     if (!value) return "La contraseña es obligatoria";
     if (value.length < 8) return "La contraseña debe tener al menos 8 caracteres";
@@ -60,6 +61,7 @@ export default function Login() {
       if (response.data?.success) {
         localStorage.setItem("user", JSON.stringify(response.data.user))
         localStorage.setItem("token", response.data.token)
+        setIntentosFallidos(0) // Resetear contador de intentos
 
         const userRole = response.data.user.id_rol
         if (userRole === 1) navigate("/administrador")
@@ -75,13 +77,21 @@ export default function Login() {
       }
     } catch (error) {
       let mensaje = "Error al conectar con el servidor"
+      
       if (error.response) {
         if (error.response.status === 401) {
-          mensaje = "Correo o contraseña incorrectos"
+          const intentosRestantes = error.response.data?.intentos_restantes || 3 - intentosFallidos - 1
+          setIntentosFallidos(prev => prev + 1)
+          mensaje = `Correo o contraseña incorrectos. ${intentosRestantes > 0 ? `Intentos restantes: ${intentosRestantes}` : 'Cuenta bloqueada.'}`
+        } else if (error.response.status === 403 && error.response.data?.cuenta_bloqueada) {
+          const tiempoRestante = error.response.data?.tiempo_restante || 2
+          // Por esto:
+          mensaje = `Cuenta bloqueada por demasiados intentos fallidos. ${tiempoRestante ? `Se desbloqueará en ${tiempoRestante} horas. ` : ''}Contacte al administrador para ayuda.` 
         } else {
           mensaje = error.response.data?.message || "Hubo un problema, intenta nuevamente"
         }
       }
+      
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -91,9 +101,6 @@ export default function Login() {
     }
     reset()
   }
-
-  const [showPassword, setShowPassword] = useState(false)
-  const [passwordFocus, setPasswordFocus] = useState(false)
 
   return (
     <main className="login-main">
