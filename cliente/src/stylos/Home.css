@@ -39,6 +39,10 @@ section:last-of-type {
   .hero-text {
     max-width: 32rem;
   }
+
+  .badge1{
+    gap: 1rem;
+  }
   
   .highlight {
     color: #0a5c8d;

@@ -39,6 +39,7 @@ const AppRoutes = () => {
             <Suspense fallback={<Loading fullPage={true} />}>
               <>
                 <Header />
+                <CookieBanner />
                 <Home />
                 <Footer />
               </>
@@ -93,7 +94,7 @@ const AppRoutes = () => {
         {/* Redirección para rutas no encontradas */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <CookieBanner />
+      
     </>
   )
 }

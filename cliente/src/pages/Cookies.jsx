@@ -9,25 +9,32 @@ export default function CookieBanner() {
   const [showSettings, setShowSettings] = useState(false)
   const [analyticsEnabled, setAnalyticsEnabled] = useState(false)
   const [marketingEnabled, setMarketingEnabled] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
-   const [isMounted, setIsMounted] = useState(false)
-
+  // Verificar consentimiento al cargar (con expiración de 3 meses)
   useEffect(() => {
     setIsMounted(true)
-    // Solo acceder a localStorage después de montar el componente
-    const hasConsent = localStorage.getItem("cookie-consent")
-    if (!hasConsent) {
+    const consent = localStorage.getItem("cookie-consent")
+    const consentDate = localStorage.getItem("cookie-consent-date")
+
+    if (consent && consentDate) {
+      const expirationDate = new Date(consentDate)
+      expirationDate.setMonth(expirationDate.getMonth() + 3) // +3 meses
+      setIsVisible(new Date() > expirationDate) // Mostrar solo si expiró
+    } else {
       setIsVisible(true)
     }
   }, [])
 
   const handleAcceptAll = () => {
     localStorage.setItem("cookie-consent", "all")
+    localStorage.setItem("cookie-consent-date", new Date().toISOString())
     setIsVisible(false)
   }
 
   const handleRejectAll = () => {
     localStorage.setItem("cookie-consent", "essential")
+    localStorage.setItem("cookie-consent-date", new Date().toISOString())
     setIsVisible(false)
   }
 
@@ -38,6 +45,7 @@ export default function CookieBanner() {
       marketing: marketingEnabled,
     }
     localStorage.setItem("cookie-consent", JSON.stringify(settings))
+    localStorage.setItem("cookie-consent-date", new Date().toISOString())
     setIsVisible(false)
     setShowSettings(false)
   }
