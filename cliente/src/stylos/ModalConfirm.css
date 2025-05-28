@@ -1,0 +1,65 @@
+/* src/stylos/ModalConfirm.css */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  }
+  
+  .modal-confirm {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    max-width: 350px;
+    text-align: center;
+    color: #333;
+  }
+  
+  .modal-confirm p {
+    margin-bottom: 20px;
+    font-size: 16px;
+  }
+  
+  .modal-buttons {
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .btn {
+    padding: 8px 18px;
+    border-radius: 5px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 90px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-cancel {
+    background-color: #e2e2e2; /* color similar al fondo de notificación */
+    color: #555;
+    border: 1px solid #cccccc;
+  }
+  
+  .btn-cancel:hover {
+    background-color: #f7f7f7;
+  }
+  
+  .btn-confirm {
+    background-color: #1a73e8; /* azul formal */
+    color: white;
+  }
+  
+  .btn-confirm:hover {
+    background-color: #155ab6;
+  }
+  
