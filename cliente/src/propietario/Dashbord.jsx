@@ -97,7 +97,7 @@ export default function Dashboard() {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         autoLogout();
-      }, 1 * 60 * 1000); // 15 minutos (ajustado)
+      }, 15 * 60 * 1000); // 15 minutos (ajustado)
     };
 
     // Eventos que reinician el temporizador
