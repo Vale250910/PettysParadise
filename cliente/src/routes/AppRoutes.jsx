@@ -19,7 +19,9 @@ import Mascotas from "../pages/Mascotas.jsx"
 import Citas from "../pages/Citas.jsx"
 import Nosotros from "../componentes/Nosotros.jsx"
 import CookieBanner from "../pages/Cookies.jsx"
-
+import GestionUsuarios from "../pages/admin/GestionUsuarios"
+import GestionRoles from "../pages/admin/GestionRoles"
+import GestionServicios from "../pages/admin/GestionServicios"
 
 const Home = lazy(() => import("../componentes/Home"))
 
@@ -29,7 +31,6 @@ const AppRoutes = () => {
   return (
     <>
       {/* Componente de debug temporal */}
-  
 
       <Routes>
         {/* Ruta Home con Header y Footer */}
@@ -39,7 +40,6 @@ const AppRoutes = () => {
             <Suspense fallback={<Loading fullPage={true} />}>
               <>
                 <Header />
-                <CookieBanner />
                 <Home />
                 <Footer />
               </>
@@ -75,11 +75,12 @@ const AppRoutes = () => {
 
         {/* RUTAS PRIVADAS PARA ADMINISTRADORES */}
         <Route element={<PrivateRouteAdministrador />}>
-          <Route path="/administrador" element={<AdministradorDashboard />} />
-          <Route path="/administrador/usuarios" element={<InfoMas />} />
-          <Route path="/administrador/veterinarios" element={<InfoMas />} />
-          <Route path="/administrador/mascotas" element={<Mascotas />} />
-          <Route path="/administrador/configuracion" element={<InfoMas />} />
+          <Route path="/administrador" element={<AdministradorDashboard />}>
+            <Route index element={<div />} /> {/* Dashboard principal */}
+            <Route path="usuarios" element={<GestionUsuarios />} />
+            <Route path="roles" element={<GestionRoles />} />
+            <Route path="servicios" element={<GestionServicios />} />
+          </Route>
         </Route>
 
         {/* RUTAS PRIVADAS PARA VETERINARIOS */}
@@ -94,13 +95,9 @@ const AppRoutes = () => {
         {/* Redirección para rutas no encontradas */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      
+      <CookieBanner />
     </>
   )
 }
 
 export default AppRoutes
-
-
-
-

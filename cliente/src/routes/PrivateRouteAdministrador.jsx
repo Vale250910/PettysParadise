@@ -74,13 +74,15 @@ const PrivateRouteAdministrador = () => {
         console.log("✅ Respuesta exitosa del servidor:", response.data)
 
         if (isMounted) {
-          if (response.data.success) {
+          // Manejar la nueva respuesta JSON del servidor
+          if (response.data && response.data.success === true) {
             setAutorizado(true)
             setError(null)
             console.log("✅ Usuario autorizado como administrador")
           } else {
             setAutorizado(false)
-            setError(response.data.message || "Verificación fallida")
+            setError(response.data?.message || "Verificación fallida")
+            console.log("❌ Autorización denegada:", response.data)
           }
         }
       } catch (error) {
@@ -141,6 +143,3 @@ const PrivateRouteAdministrador = () => {
 }
 
 export default PrivateRouteAdministrador
-
-
-
