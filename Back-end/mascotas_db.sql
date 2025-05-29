@@ -228,9 +228,45 @@ CHANGE cod_mas cod_mas INT(11) COMMENT 'Mascota para la cita (FK)',
 CHANGE id_pro id_pro INT(11) NOT NULL COMMENT 'Usuario que solicita la cita (FK)',
 CHANGE estado estado ENUM('PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'REALIZADA', 'NO_ASISTIDA') NOT NULL DEFAULT 'PENDIENTE' COMMENT 'Estado actual de la cita',
 CHANGE notas notas TEXT COMMENT 'Notas adicionales sobre la cita';
-
+-- Add columns to track login attempts and account locking
 ALTER TABLE usuarios 
 ADD COLUMN intentos_fallidos INT DEFAULT 0 COMMENT 'Número de intentos fallidos de inicio de sesión',
-ADD COLUMN cuenta_bloqueada BOOLEAN DEFAULT FALSE COMMENT 'Indica si la cuenta está bloqueada',
-ADD COLUMN fecha_bloqueo DATETIME NULL COMMENT 'Fecha y hora cuando la cuenta fue bloqueada';
+ADD COLUMN cuenta_bloqueada TINYINT(1) DEFAULT 0 COMMENT 'Indica si la cuenta está bloqueada (1) o no (0)',
+ADD COLUMN fecha_bloqueo DATETIME DEFAULT NULL COMMENT 'Fecha y hora en que se bloqueó la cuenta',
+ADD COLUMN razon_bloqueo VARCHAR(255) DEFAULT NULL COMMENT 'Razón por la que se bloqueó la cuenta';
+
+-- Agregar columnas
+ALTER TABLE usuarios ADD COLUMN fecha_registro DATETIME DEFAULT NULL COMMENT 'Fecha y hora de registro del usuario';
+ALTER TABLE usuarios ADD COLUMN activo TINYINT(1) DEFAULT 1 COMMENT 'Estado activo (1) o inactivo (0) del usuario';
+
+-- Actualizar usuarios uno por uno usando ID
+UPDATE usuarios SET fecha_registro = NOW() WHERE id_usuario > 0;
+UPDATE usuarios SET activo = 1 WHERE id_usuario > 0;
+
+-- Verificar resultado
+SELECT 'Usuarios actualizados:' as Info;
+SELECT id_usuario, nombre, apellido, activo, fecha_registro FROM usuarios;
+
+SELECT '✅ Actualización por ID completada!' as Resultado;
+
+
+DESCRIBE servicios;
+
+select * from usuarios;
+
+-- Insertar el usuario administrador
+INSERT INTO usuarios (
+    tipo_doc, id_usuario, nombre, apellido, ciudad, direccion, telefono,
+    fecha_nacimiento, email, contrasena, id_tipo, id_rol
+) VALUES (
+    'C.C', 104, 'Sofía', 'López', 'Bogotá', 'Calle 78 #10-45', '3112233445',
+    '1988-11-22', 'sofia@email.com', 'Hola1234?', 4, 1
+);
+
+-- Insertar el administrador correspondiente
+INSERT INTO administradores (
+    id_admin, cargo, fecha_ingreso
+) VALUES (
+    104, 'Coordinadora de Operaciones', '2025-05-26'
+);
 
