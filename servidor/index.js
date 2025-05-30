@@ -7,7 +7,7 @@ const encriptarContrasenas = require('./encrypt'); // Importamos el script
 app.use(cors({
   origin: ["http://localhost:3000", "http://localhost:5173"],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], 
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(express.json());
@@ -26,6 +26,8 @@ const passwordRoutes = require("./routes/password");
 const rolesRoutes = require("./routes/roles");
 const serviciosRoutes = require("./routes/servicios");
 const verMasRoutes = require("./routes/vermas");
+const uploadRoutes = require('./routes/upload');
+
 
 // Usar rutas con prefijos
 app.use("/api/auth", authRoutes);
@@ -35,6 +37,12 @@ app.use("/api/password", passwordRoutes);
 app.use("/api/roles", rolesRoutes);
 app.use("/api/servicios", serviciosRoutes);
 app.use("/api/vermas", verMasRoutes);
+app.use('/api/upload', uploadRoutes);
+
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Servidor funcionando' });
+});
 
 // Manejador de errores
 app.use((err, req, res, next) => {

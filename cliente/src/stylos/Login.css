@@ -106,6 +106,41 @@ body {
   position: relative;
   width: 100%;
 }
+/* Add this to your existing Login.css file */
+
+.cuenta-bloqueada-alert {
+  background-color: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cuenta-bloqueada-alert .lock-icon {
+  color: #c62828;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.cuenta-bloqueada-alert p {
+  color: #c62828;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cuenta-bloqueada-alert span {
+  font-weight: 500;
+}
+
+/* Disable button when account is locked */
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
 .input-icon-container.right .input-icon {
   position: absolute;
