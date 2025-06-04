@@ -1,0 +1,673 @@
+/* cliente/src/stylos/Vet.css */
+:root {
+    --vet-primary-accent: #5dade2; /* Azul cielo veterinario */
+    --vet-primary-accent-dark: #3498db; /* Azul cielo más oscuro */
+    --vet-primary-accent-light: #85c1e9; /* Azul cielo más claro */
+    --vet-primary-gradient: linear-gradient(135deg, var(--vet-primary-accent) 0%, var(--vet-primary-accent-dark) 100%);
+  
+    --vet-secondary-accent: #9b59b6; /* Morado para acentos */
+    --vet-secondary-accent-dark: #8e44ad;
+    --vet-secondary-accent-light: #bb8fce;
+  
+    --vet-sidebar-bg: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%); /* Gris azulado oscuro */
+    --vet-sidebar-text: #bdc3c7; /* Texto atenuado */
+    --vet-sidebar-text-active: #ffffff; /* Texto activo (Blanco) */
+    --vet-sidebar-border: rgba(255, 255, 255, 0.1);
+    --vet-sidebar-active-bg: rgba(93, 173, 226, 0.15); /* Acento primario con alfa */
+    --vet-sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+  
+    --vet-page-bg: #ecf0f1; /* Fondo de página gris muy claro */
+    --vet-card-bg: #ffffff; /* Blanco para tarjetas */
+    --vet-border-color: #d5dbdb; /* Color de borde estándar */
+    --vet-header-border: #bdc3c7; /* Borde para cabecera */
+    --vet-shadow-light: rgba(93, 173, 226, 0.1);
+    --vet-shadow-medium: rgba(93, 173, 226, 0.15);
+  
+    --vet-text-strong: #2c3e50; /* Gris azulado oscuro para títulos */
+    --vet-text-normal: #34495e; /* Gris azulado para texto regular */
+    --vet-text-muted: #7f8c8d; /* Gris medio para subtítulos */
+  
+    --vet-role-badge-bg: var(--vet-secondary-accent);
+    --vet-role-badge-text: var(--vet-sidebar-text-active);
+  
+    --vet-danger-bg: #e74c3c; /* Rojo para peligro/logout */
+    --vet-danger-bg-hover: #c0392b;
+    --vet-danger-text: var(--vet-sidebar-text-active);
+    --vet-danger-shadow: rgba(231, 76, 60, 0.2);
+  
+    --vet-stat-card-appointments-border: var(--vet-primary-accent);
+    --vet-stat-card-patients-border: #27ae60; /* Verde para pacientes */
+    --vet-stat-card-records-border: var(--vet-secondary-accent); /* Morado para historiales */
+    --vet-border-radius: 12px; /* Radio de borde general */
+  }
+  
+  /* Vet Dashboard - Estilos principales */
+  .vet-dashboard {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--vet-page-bg);
+  }
+  
+  /* Sidebar */
+  .vet-sidebar {
+    width: 280px;
+    background: var(--vet-sidebar-bg);
+    color: var(--vet-sidebar-text-active);
+    padding: 0;
+    box-shadow: 2px 0 10px var(--vet-shadow-medium);
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+  
+  /* Header del sidebar para móvil */
+  .vet-sidebar-header {
+    display: none; /* Oculto por defecto, visible solo en móvil */
+    justify-content: flex-end;
+    padding: 16px;
+    border-bottom: 1px solid var(--vet-sidebar-border);
+  }
+  
+  .vet-sidebar-close {
+    background: none;
+    border: none;
+    color: var(--vet-sidebar-text-active);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+  }
+  
+  .vet-sidebar-close:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .vet-user-info {
+    padding: 30px 20px;
+    border-bottom: 1px solid var(--vet-sidebar-border);
+    text-align: center;
+  }
+  
+  .vet-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--vet-primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 20px;
+    margin: 0 auto 15px auto;
+    color: var(--vet-sidebar-text-active);
+    border: 3px solid var(--vet-secondary-accent);
+  }
+  
+  .vet-user-details {
+    text-align: center;
+  }
+  
+  .user-name {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--vet-sidebar-text-active);
+  }
+  
+  .vet-user-email {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: var(--vet-sidebar-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .vet-user-role {
+    background: var(--vet-role-badge-bg);
+    color: var(--vet-role-badge-text);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    margin: 0 auto 8px auto;
+  }
+  
+  .vet-user-specialty {
+    font-size: 13px;
+    color: var(--vet-primary-accent-light);
+    font-style: italic;
+  }
+  
+  /* Navigation */
+  .vet-nav {
+    padding: 20px 0;
+  }
+  
+  .vet-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .vet-nav li {
+    margin-bottom: 4px;
+  }
+  
+  .vet-nav a,
+  .vet-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 25px;
+    color: var(--vet-sidebar-text);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    border-right: 4px solid transparent;
+  }
+  
+  .vet-nav a:hover,
+  .vet-logout-btn:hover {
+    background: var(--vet-sidebar-hover-bg);
+    color: var(--vet-sidebar-text-active);
+    padding-left: 30px;
+  }
+  
+  .vet-nav li.active a {
+    background: var(--vet-sidebar-active-bg);
+    color: var(--vet-primary-accent-light);
+    border-right-color: var(--vet-primary-accent);
+    font-weight: 600;
+  }
+  
+  .vet-sidebar-footer {
+    margin-top: auto;
+    padding: 20px;
+    border-top: 1px solid var(--vet-sidebar-border);
+  }
+  
+  .vet-logout-btn {
+    color: var(--vet-danger-text);
+    background: rgba(231, 76, 60, 0.1);
+    border-radius: var(--vet-border-radius);
+    margin: 0;
+  }
+  
+  .vet-logout-btn:hover {
+    background: var(--vet-danger-bg);
+    color: var(--vet-danger-text);
+    border-right-color: var(--vet-danger-bg-hover);
+  }
+  
+  /* Main Content */
+  .vet-main-content {
+    flex: 1;
+    margin-left: 280px;
+    display: flex;
+    flex-direction: column;
+    transition: margin-left 0.3s ease;
+  }
+  
+  /* Botón de menú hamburguesa */
+  .vet-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--vet-text-strong);
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 16px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+  }
+  
+  .vet-menu-toggle:hover {
+    background-color: var(--vet-page-bg);
+  }
+  
+  /* Header mejorado */
+  .vet-header {
+    background: var(--vet-card-bg);
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--vet-header-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px var(--vet-shadow-light);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .vet-header h1 {
+    margin: 0;
+    color: var(--vet-text-strong);
+    font-size: 24px;
+    font-weight: 600;
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  /* Botón de notificaciones */
+  .vet-notification-btn {
+    position: relative;
+    background: none;
+    border: none;
+    color: var(--vet-text-muted);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+  
+  .vet-notification-btn:hover {
+    background-color: var(--vet-page-bg);
+    color: var(--vet-primary-accent);
+  }
+  
+  .notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--vet-secondary-accent);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Botón de logout en header */
+  .vet-logout-btn-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--vet-danger-bg) !important;
+    color: #ffffff !important;
+    border: 2px solid var(--vet-danger-bg) !important;
+    padding: 12px 24px;
+    border-radius: var(--vet-border-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    box-shadow: 0 4px 12px var(--vet-danger-shadow);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 140px;
+  }
+  
+  .vet-logout-btn-header:hover {
+    background: var(--vet-danger-bg-hover) !important;
+    border-color: var(--vet-danger-bg-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--vet-danger-shadow);
+  }
+  
+  /* Content */
+  .vet-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+  }
+  
+  /* Dashboard Summary */
+  .dashboard-summary {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .welcome-section {
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  
+  .welcome-section h2 {
+    color: var(--vet-text-strong);
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+  }
+  
+  .welcome-message {
+    color: var(--vet-text-muted);
+    font-size: 18px;
+    margin: 0;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  
+  /* Stats Grid */
+  .vet-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+  }
+  
+  .vet-stat-card {
+    background: var(--vet-card-bg);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px var(--vet-shadow-medium);
+    transition: all 0.3s ease;
+    border: 1px solid var(--vet-border-color);
+  }
+  
+  .vet-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px var(--vet-shadow-medium);
+  }
+  
+  .vet-stat-card.appointments {
+    border-left: 5px solid var(--vet-stat-card-appointments-border);
+  }
+  
+  .vet-stat-card.patients {
+    border-left: 5px solid var(--vet-stat-card-patients-border);
+  }
+  
+  .vet-stat-card.records {
+    border-left: 5px solid var(--vet-stat-card-records-border);
+  }
+  
+  .vet-stat-icon {
+    color: var(--vet-primary-accent);
+    margin-bottom: 20px;
+  }
+  
+  .vet-stat-content h3 {
+    color: var(--vet-text-strong);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+  }
+  
+  .vet-stat-value {
+    color: var(--vet-primary-accent);
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 15px 0;
+  }
+  
+  .card-link {
+    color: var(--vet-primary-accent);
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .card-link:hover {
+    color: var(--vet-primary-accent-dark);
+    gap: 12px;
+  }
+  
+  /* Quick Actions */
+  .quick-actions {
+    background: var(--vet-card-bg);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px var(--vet-shadow-medium);
+    border: 1px solid var(--vet-border-color);
+  }
+  
+  .quick-actions h3 {
+    color: var(--vet-text-strong);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 25px 0;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .vet-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: var(--vet-border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .vet-btn-primary {
+    background: var(--vet-primary-gradient);
+    color: var(--vet-sidebar-text-active);
+  }
+  
+  .vet-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--vet-shadow-medium);
+  }
+  
+  .vet-btn-secondary {
+    background: var(--vet-page-bg);
+    color: var(--vet-text-normal);
+    border: 1px solid var(--vet-border-color);
+  }
+  
+  .vet-btn-secondary:hover {
+    background-color: #d5dbdb;
+    transform: translateY(-1px);
+  }
+  
+  /* Loading */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--vet-page-bg);
+    border-top: 4px solid var(--vet-primary-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Error */
+  .error-message {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--vet-danger-bg);
+    padding: 16px;
+    border-radius: var(--vet-border-radius);
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid var(--vet-danger-bg);
+  }
+  
+  /* Overlay para móvil cuando sidebar está abierto */
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+  
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    .vet-sidebar {
+      width: 260px;
+    }
+  
+    .vet-main-content {
+      margin-left: 260px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    /* Mostrar botón de menú hamburguesa */
+    .vet-menu-toggle {
+      display: block;
+    }
+  
+    /* Mostrar header del sidebar */
+    .vet-sidebar-header {
+      display: flex;
+    }
+  
+    /* Sidebar oculto por defecto en móvil */
+    .vet-sidebar {
+      width: 280px;
+      left: -280px;
+      transition: left 0.3s ease;
+    }
+  
+    /* Clase para mostrar sidebar en móvil */
+    .vet-sidebar.mobile-open {
+      left: 0;
+    }
+  
+    /* Mostrar overlay cuando sidebar está abierto */
+    .mobile-overlay {
+      display: block;
+    }
+  
+    /* Contenido principal ocupa todo el ancho */
+    .vet-main-content {
+      margin-left: 0;
+      width: 100%;
+    }
+  
+    .vet-stats-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  
+    .action-buttons {
+      flex-direction: column;
+      gap: 12px;
+    }
+  
+    .vet-header {
+      padding: 15px 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  
+    .vet-header h1 {
+      font-size: 20px;
+    }
+  
+    /* Botón logout responsivo */
+    .vet-logout-btn-header {
+      padding: 10px 16px !important;
+      font-size: 12px !important;
+      min-width: 120px;
+      gap: 6px;
+    }
+  
+    .vet-content {
+      padding: 20px 15px;
+    }
+  
+    .welcome-section h2 {
+      font-size: 24px;
+    }
+  
+    .welcome-message {
+      font-size: 16px;
+    }
+  
+    .vet-stat-card {
+      padding: 20px;
+    }
+  
+    .vet-stat-value {
+      font-size: 28px;
+    }
+  
+    .quick-actions {
+      padding: 20px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .vet-header {
+      padding: 12px 15px;
+    }
+  
+    .vet-header h1 {
+      font-size: 18px;
+    }
+  
+    .vet-logout-btn-header {
+      padding: 8px 12px !important;
+      font-size: 11px !important;
+      min-width: 100px;
+    }
+  
+    .vet-content {
+      padding: 15px 10px;
+    }
+  
+    .welcome-section h2 {
+      font-size: 20px;
+    }
+  
+    .vet-stat-card {
+      padding: 15px;
+    }
+  
+    .vet-stat-value {
+      font-size: 24px;
+    }
+  
+    .vet-btn {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+  }
+  

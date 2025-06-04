@@ -89,6 +89,21 @@ router.get("/verificar-administrador", authenticateToken, async (req, res) => {
 })
 
 /**
+ * Endpoint para verificar si un usuario es veterinario
+ */
+router.get("/verificar-veterinario", authenticateToken, async (req, res) => {
+  // El middleware authenticateToken ya habrá poblado req.user si el token es válido
+  // y este contiene id_rol.
+  if (req.user && req.user.id_rol === 2) { // 2 es el id_rol para Veterinario
+    res.status(200).json({ success: true, message: "Usuario autorizado como veterinario" });
+  } else {
+    // Opcional: Log para depuración en el servidor si la verificación falla
+    console.log("Intento de acceso a /verificar-veterinario fallido. Rol del usuario:", req.user ? req.user.id_rol : "No hay usuario en req");
+    res.status(403).json({ success: false, message: "Acceso denegado: se requiere rol de veterinario" });
+  }
+});
+
+/**
  * Obtener estadísticas del dashboard
  */
 router.get("/dashboard/stats", authenticateToken, verificarAdmin, async (req, res) => {
