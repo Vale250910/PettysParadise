@@ -236,7 +236,7 @@ ADD COLUMN fecha_bloqueo DATETIME DEFAULT NULL COMMENT 'Fecha y hora en que se b
 ADD COLUMN razon_bloqueo VARCHAR(255) DEFAULT NULL COMMENT 'Razón por la que se bloqueó la cuenta';
 
 -- Agregar columnas
-ALTER TABLE usuarios ADD COLUMN fecha_registro DATETIME DEFAULT NULL COMMENT 'Fecha y hora de registro del usuario';
+ALTER TABLE usuarios ADD COLUMN fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Fecha y hora de registro del usuario';
 ALTER TABLE usuarios ADD COLUMN activo TINYINT(1) DEFAULT 1 COMMENT 'Estado activo (1) o inactivo (0) del usuario';
 
 -- Actualizar usuarios uno por uno usando ID
@@ -270,3 +270,4 @@ INSERT INTO administradores (
     104, 'Coordinadora de Operaciones', '2025-05-26'
 );
 
+select * from usuarios;

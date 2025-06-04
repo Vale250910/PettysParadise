@@ -1,8 +1,10 @@
+// cliente/src/pages/admin/GestionUsuarios.jsx
 "use client"
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import "../../stylos/Admin/GestionUsuarios.css"; // Asegúrate que la ruta a tu CSS es correcta
+import "../../stylos/Admin/GestionUsuarios.css"; 
+import { FaToggleOn, FaToggleOff, FaEdit } from 'react-icons/fa'; // Importar iconos
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -16,18 +18,18 @@ const GestionUsuarios = () => {
 
   const initialFormData = {
     id_usuario: "",
-    tipo_doc: "C.C", // Campo nuevo, valor por defecto
+    tipo_doc: "C.C",
     nombre: "",
     apellido: "",
-    ciudad: "",         // Campo nuevo
-    direccion: "",      // Campo nuevo
+    ciudad: "",
+    direccion: "",
     telefono: "",
-    fecha_nacimiento: "", // Campo nuevo
+    fecha_nacimiento: "",
     email: "",
     password: "",
-    id_rol: 3, // Por defecto Propietario (rol ID 3)
-    especialidad: "", // Para veterinarios
-    horario: "",      // Para veterinarios
+    id_rol: 3, 
+    especialidad: "",
+    horario: "",
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -46,7 +48,7 @@ const GestionUsuarios = () => {
 
       if (response.data.success) {
         setUsuarios(response.data.usuarios);
-        setError(""); // Limpiar error si la carga es exitosa
+        setError("");
       } else {
         setError("Error al cargar usuarios: " + (response.data.message || ""));
       }
@@ -69,7 +71,6 @@ const GestionUsuarios = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación de contraseña para nuevos usuarios
     if (!editingUser) {
       if (!formData.password) {
         alert("La contraseña es obligatoria para nuevos usuarios.");
@@ -84,7 +85,7 @@ const GestionUsuarios = () => {
         alert("Contraseña no válida. Requisitos: Mínimo 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.");
         return;
       }
-    } else if (formData.password && formData.password.length > 0) { // Si se está editando y se ingresó una nueva contraseña
+    } else if (formData.password && formData.password.length > 0) { 
         if (formData.password.length < 8) {
             alert("La nueva contraseña debe tener al menos 8 caracteres.");
             return;
@@ -96,8 +97,6 @@ const GestionUsuarios = () => {
         }
     }
 
-
-    // Validación de fecha de nacimiento (mayor de 18 años)
     if (formData.fecha_nacimiento) {
       const birthDate = new Date(formData.fecha_nacimiento);
       const today = new Date();
@@ -118,13 +117,10 @@ const GestionUsuarios = () => {
     try {
       const token = localStorage.getItem("token");
       let response;
-      
-      // Prepara los datos a enviar, excluyendo la contraseña si no se va a cambiar en edición
       const dataToSend = { ...formData };
       if (editingUser && !dataToSend.password) {
         delete dataToSend.password;
       }
-
 
       if (editingUser) {
         response = await axios.put(`${API_URL}/api/roles/usuarios/${editingUser.id_usuario}`, dataToSend, {
@@ -160,8 +156,8 @@ const GestionUsuarios = () => {
       telefono: usuario.telefono || "",
       ciudad: usuario.ciudad && usuario.ciudad !== "No especificada" ? usuario.ciudad : "",
       direccion: usuario.direccion && usuario.direccion !== "No especificada" ? usuario.direccion : "",
-      fecha_nacimiento: usuario.fecha_nacimiento && usuario.fecha_nacimiento !== "1990-01-01" ? new Date(usuario.fecha_nacimiento).toISOString().split('T')[0] : "",
-      password: "", // No precargar contraseña
+      fecha_nacimiento: usuario.fecha_nacimiento ? new Date(usuario.fecha_nacimiento).toISOString().split('T')[0] : "",
+      password: "", 
       id_rol: usuario.id_rol,
       especialidad: usuario.especialidad || "",
       horario: usuario.horario || "",
@@ -177,7 +173,6 @@ const GestionUsuarios = () => {
         return;
       }
 
-      // Mensaje de confirmación más claro
       const usuario = usuarios.find(u => u.id_usuario === userId);
       const estadoActual = usuario.cuenta_bloqueada ? "inactivo" : "activo";
       const nuevoEstadoAccion = usuario.cuenta_bloqueada ? "activar" : "desactivar";
@@ -188,20 +183,18 @@ const GestionUsuarios = () => {
 
       const response = await axios.patch(
         `${API_URL}/api/roles/usuarios/${userId}/toggle-status`,
-        {}, // Cuerpo vacío, como lo espera el backend
+        {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {
-        alert(response.data.message); // El backend ahora envía un mensaje más descriptivo
-        fetchUsuarios(); // Recargar la lista de usuarios para reflejar el cambio
+        alert(response.data.message);
+        fetchUsuarios();
       } else {
-        // Este alert se mostrará si success es false, con el mensaje del backend
         alert(`Error: ${response.data.message || "No se pudo cambiar el estado."}`);
       }
     } catch (error) {
       console.error("Error al intentar cambiar estado:", error);
-      // Este alert se mostrará si hay un error de red o un error 500, etc.
       let errorMessage = "Error al cambiar el estado del usuario.";
       if (error.response && error.response.data && error.response.data.message) {
         errorMessage = error.response.data.message;
@@ -212,8 +205,10 @@ const GestionUsuarios = () => {
     }
   };
 
+  // Se comenta la función handleDelete para priorizar la desactivación
+  /*
   const handleDelete = async (userId, userName) => {
-    if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario ${userName}?`)) {
+    if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario ${userName}? Esta acción es irreversible.`)) {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.delete(`${API_URL}/api/roles/usuarios/${userId}`, {
@@ -221,17 +216,18 @@ const GestionUsuarios = () => {
         });
 
         if (response.data.success) {
-          alert("Usuario eliminado exitosamente");
+          alert("Usuario eliminado permanentemente");
           fetchUsuarios();
         } else {
           alert(response.data.message || "Error al eliminar usuario");
         }
       } catch (error) {
         console.error("Error deleting user:", error);
-        alert(error.response?.data?.message || "Error al eliminar usuario");
+        alert(error.response?.data?.message || "Error al eliminar usuario permanentemente");
       }
     }
   };
+  */
 
   const closeModal = () => {
     setShowModal(false);
@@ -247,7 +243,7 @@ const GestionUsuarios = () => {
 
   const filteredUsuarios = usuarios.filter((usuario) => {
     const searchLower = searchTerm.toLowerCase();
-    const searchNumber = searchTerm.replace(/\D/g, "");
+    const searchNumber = searchTerm.replace(/\D/g, ""); // Obtener solo números para búsqueda de ID
 
     if (searchNumber && usuario.id_usuario.toString().includes(searchNumber)) {
       return true;
@@ -261,20 +257,19 @@ const GestionUsuarios = () => {
   });
 
   const formatDate = (dateString) => {
-    if (!dateString || dateString === "1990-01-01T05:00:00.000Z") return "No especificada"; // Manejar fecha por defecto
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "Fecha inválida";
-      return date.toLocaleDateString("es-ES", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
+    if (!dateString) return "No disponible";
+    // Intentar parsear la fecha, si es inválida, devolver 'Fecha inválida'
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
       return "Fecha inválida";
     }
+    // Formatear a un formato legible, ej: "15/may/2024"
+    return date.toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "short", // 'short' para 'may', 'long' para 'mayo'
+      day: "numeric",
+    });
   };
-
 
   if (loading) {
     return (
@@ -320,11 +315,10 @@ const GestionUsuarios = () => {
       )}
 
       <div className="usuarios-stats-grid">
-        {/* ... (stats cards - sin cambios) ... */}
+        {/* Aquí podrías poner tarjetas de estadísticas si las tienes */}
       </div>
 
       <div className="usuarios-table-container">
-        {/* ... (tabla - sin cambios en la estructura JSX, pero los datos cambiarán) ... */}
          <table className="usuarios-table">
           <thead>
             <tr>
@@ -341,7 +335,7 @@ const GestionUsuarios = () => {
             {filteredUsuarios.length === 0 ? (
               <tr>
                 <td colSpan="7" className="usuarios-no-data">
-                  {searchTerm ? "No se encontraron usuarios" : "No hay usuarios registrados"}
+                  {searchTerm ? "No se encontraron usuarios que coincidan con la búsqueda." : "No hay usuarios registrados."}
                 </td>
               </tr>
             ) : (
@@ -356,7 +350,7 @@ const GestionUsuarios = () => {
                         {usuario.nombre} {usuario.apellido}
                       </div>
                       {usuario.telefono && (
-                        <div style={{ fontSize: "12px", color: "#6b7280" }}>📞 {usuario.telefono}</div>
+                        <div style={{ fontSize: "12px", color: "var(--admin-text-muted)" }}>📞 {usuario.telefono}</div>
                       )}
                     </div>
                   </td>
@@ -364,7 +358,7 @@ const GestionUsuarios = () => {
                     <span style={{ fontSize: "14px" }}>{usuario.email}</span>
                   </td>
                   <td>
-                    <span className={`usuarios-badge usuarios-badge-${(usuario.nombre_rol || 'desconocido').toLowerCase()}`}>
+                    <span className={`usuarios-badge usuarios-badge-${(usuario.nombre_rol || 'desconocido').toLowerCase().replace(/\s+/g, '-')}`}>
                       {usuario.nombre_rol || 'N/A'}
                     </span>
                   </td>
@@ -376,28 +370,33 @@ const GestionUsuarios = () => {
                     </span>
                   </td>
                   <td>
-                    {/* ... fecha_registro ... */}
+                    {formatDate(usuario.fecha_registro)} {/* Mostrar fecha formateada */}
                   </td>
                   <td>
                     <div className="usuarios-action-buttons">
-                      <button className="usuarios-btn-icon" onClick={() => handleEdit(usuario)} title="Editar">
-                        ✏️
-                      </button>
-                      <button
-                        className="usuarios-btn-icon"
-                        onClick={() => handleToggleStatus(usuario.id_usuario)}
-                        title={usuario.cuenta_bloqueada ? "Activar Usuario" : "Desactivar Usuario"} // LÓGICA CORREGIDA AQUÍ
+                      <button 
+                        className="usuarios-btn-icon edit" 
+                        onClick={() => handleEdit(usuario)} 
+                        title="Editar Usuario"
                       >
-                        {/* Ícono: si está bloqueado (inactivo), muestra "check" para activar. Si está activo, muestra "X" para desactivar. */}
-                        {usuario.cuenta_bloqueada ? "✅" : "❌"} 
+                        <FaEdit />
                       </button>
                       <button
-                        className="usuarios-btn-icon"
+                        className={`usuarios-btn-icon ${usuario.cuenta_bloqueada ? "toggle-status-inactive" : "toggle-status-active"}`}
+                        onClick={() => handleToggleStatus(usuario.id_usuario)}
+                        title={usuario.cuenta_bloqueada ? "Activar Usuario" : "Desactivar Usuario"}
+                      >
+                        {usuario.cuenta_bloqueada ? <FaToggleOn /> : <FaToggleOff />}
+                      </button>
+                      {/* Se comenta el botón de eliminar
+                      <button
+                        className="usuarios-btn-icon delete"
                         onClick={() => handleDelete(usuario.id_usuario, `${usuario.nombre} ${usuario.apellido}`)}
-                        title="Eliminar"
+                        title="Eliminar Usuario (¡Permanente!)"
                       >
                         🗑️
                       </button>
+                      */}
                     </div>
                   </td>
                 </tr>
@@ -418,6 +417,7 @@ const GestionUsuarios = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="usuarios-form">
+              {/* Campos del formulario como los tenías, incluyendo tipo_doc, fecha_nacimiento, etc. */}
               <div className="usuarios-form-grid">
                 <div className="usuarios-form-group">
                   <label className="usuarios-form-label">Tipo de Documento *</label>
@@ -559,11 +559,11 @@ const GestionUsuarios = () => {
                   type="password" name="password" value={formData.password} onChange={handleInputChange}
                   className="usuarios-form-input"
                   required={!editingUser}
-                  minLength={editingUser && !formData.password ? undefined : 8} // Solo minLength si se está creando o cambiando
+                  minLength={editingUser && !formData.password ? undefined : 8} 
                   placeholder={editingUser ? "Dejar en blanco si no cambia" : "Mínimo 8 caracteres, con requisitos"}
                 />
-                 {(!editingUser || formData.password) && ( // Mostrar solo si es creación o si se está escribiendo una nueva contraseña
-                    <small style={{ fontSize: '0.8em', color: '#666', marginTop: '4px', display: 'block' }}>
+                 {(!editingUser || formData.password) && ( 
+                    <small className="password-requirements-modal">
                         Debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial (ej: !@#$%^&*).
                     </small>
                 )}

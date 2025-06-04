@@ -11,6 +11,8 @@ import {
   MdPeople as IconPeople,
   MdAssignment as IconAssignment,
   MdSupervisorAccount as IconSupervisor,
+  MdMenu as IconMenu,
+  MdClose as IconClose,
 } from "react-icons/md"
 import "../stylos/Admin.css"
 import axios from "axios"
@@ -27,9 +29,21 @@ const AdministradorDashboard = () => {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  // Estado para controlar la visibilidad del sidebar en móvil
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Verificar si estamos en la página principal del dashboard
   const isMainDashboard = location.pathname === "/administrador"
+
+  // Función para alternar la visibilidad del sidebar
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen)
+  }
+
+  // Cerrar sidebar al cambiar de ruta en móvil
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location.pathname])
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -116,7 +130,20 @@ const AdministradorDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      <div className="admin-sidebar">
+      {/* Overlay para móvil cuando el sidebar está abierto */}
+      {sidebarOpen && (
+        <div className="mobile-overlay" onClick={toggleSidebar}></div>
+      )}
+
+      {/* Sidebar con clase condicional para móvil */}
+      <div className={`admin-sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
+        <div className="admin-sidebar-header">
+          {/* Botón para cerrar sidebar en móvil */}
+          <button className="admin-sidebar-close" onClick={toggleSidebar}>
+            <IconClose size={24} />
+          </button>
+        </div>
+        
         <div className="admin-user-info">
           <div className="admin-avatar">
             {userData.nombre.charAt(0).toUpperCase()}
@@ -136,22 +163,22 @@ const AdministradorDashboard = () => {
         <nav className="admin-nav">
           <ul>
             <li className={location.pathname === "/administrador" ? "active" : ""}>
-              <Link to="/administrador">
+              <Link to="/administrador" onClick={() => setSidebarOpen(false)}>
                 <IconDashboard /> Dashboard
               </Link>
             </li>
             <li className={location.pathname.includes("/administrador/usuarios") ? "active" : ""}>
-              <Link to="/administrador/usuarios">
+              <Link to="/administrador/usuarios" onClick={() => setSidebarOpen(false)}>
                 <IconPeople /> Gestión de Usuarios
               </Link>
             </li>
             <li className={location.pathname.includes("/administrador/roles") ? "active" : ""}>
-              <Link to="/administrador/roles">
+              <Link to="/administrador/roles" onClick={() => setSidebarOpen(false)}>
                 <IconSupervisor /> Gestión de Roles
               </Link>
             </li>
             <li className={location.pathname.includes("/administrador/servicios") ? "active" : ""}>
-              <Link to="/administrador/servicios">
+              <Link to="/administrador/servicios" onClick={() => setSidebarOpen(false)}>
                 <IconAssignment /> Gestión de Servicios
               </Link>
             </li>
@@ -161,7 +188,12 @@ const AdministradorDashboard = () => {
 
       <div className="admin-main-content">
         <header className="admin-header">
-          <h1>{getCurrentPageTitle()}</h1>
+          {/* Botón de menú hamburguesa para móvil */}
+          <button className="admin-menu-toggle" onClick={toggleSidebar}>
+            <IconMenu size={24} />
+          </button>
+          
+          <h1></h1>
           <div className="header-actions">
             <button onClick={handleLogout} className="admin-logout-btn-header">
               <IconLogout size={20} />

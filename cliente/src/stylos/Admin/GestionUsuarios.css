@@ -1,16 +1,43 @@
-/* Gestión de Usuarios - Estilos Específicos */
+/* cliente/src/stylos/Admin/GestionUsuarios.css */
+:root {
+  --admin-primary-accent: #3b82f6;
+  --admin-primary-accent-dark: #2563eb;
+  --admin-page-bg: #f3f4f6;
+  --admin-card-bg: #ffffff;
+  --admin-border-color: #d1d5db;
+  --admin-header-border: #e5e7eb;
+  --admin-shadow-light: rgba(0, 0, 0, 0.05);
+  --admin-shadow-medium: rgba(0, 0, 0, 0.1);
+  --admin-text-strong: #111827;
+  --admin-text-normal: #374151;
+  --admin-text-muted: #6b7280;
+  --admin-danger-text-color: #dc2626; 
+  --admin-danger-bg-hover: #b91c1c;
+  --admin-danger-bg: #fee2e2;
+  --admin-sidebar-text-active: #ffffff;
+  --admin-border-radius: 12px;
+
+  --user-badge-vet-bg: #dbeafe; 
+  --user-badge-vet-text: #1d4ed8; 
+  --user-badge-owner-bg: #f3e8ff; 
+  --user-badge-owner-text: #7c3aed; 
+  --user-badge-active-bg: #dcfce7; 
+  --user-badge-active-text: #166534; 
+  --user-badge-inactive-bg: var(--admin-danger-bg);
+  --user-badge-inactive-text: var(--admin-danger-text-color);
+}
+
 .gestion-usuarios-container {
   padding: 24px;
-  background-color: #f8fafc;
+  background-color: var(--admin-page-bg);
   min-height: 100vh;
 }
 
-/* Header específico para usuarios */
 .usuarios-page-header {
-  background: white;
+  background: var(--admin-card-bg);
   padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: var(--admin-border-radius);
+  box-shadow: 0 1px 3px var(--admin-shadow-light);
   margin-bottom: 24px;
 }
 
@@ -22,24 +49,24 @@
 }
 
 .usuarios-title-section h1 {
-  color: #1e293b;
+  color: var(--admin-text-strong);
   margin: 0 0 8px 0;
   font-size: 28px;
   font-weight: 700;
 }
 
 .usuarios-title-section p {
-  color: #64748b;
+  color: var(--admin-text-muted);
   margin: 0;
   font-size: 16px;
 }
 
 .usuarios-create-btn {
-  background: #3b82f6;
-  color: white;
+  background: var(--admin-primary-accent);
+  color: var(--admin-sidebar-text-active);
   border: none;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: var(--admin-border-radius);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -47,11 +74,10 @@
 }
 
 .usuarios-create-btn:hover {
-  background: #2563eb;
+  background: var(--admin-primary-accent-dark);
   transform: translateY(-1px);
 }
 
-/* Search específico con estilo mejorado */
 .usuarios-search-container {
   position: relative;
 }
@@ -59,28 +85,27 @@
 .usuarios-search-input {
   width: 100%;
   padding: 14px 20px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--admin-border-color);
+  border-radius: var(--admin-border-radius);
   font-size: 14px;
   transition: all 0.3s ease;
-  background: #f8fafc;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--admin-page-bg);
+  box-shadow: 0 1px 3px var(--admin-shadow-light);
 }
 
 .usuarios-search-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  background: white;
+  border-color: var(--admin-primary-accent);
+  background: var(--admin-card-bg);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   transform: translateY(-1px);
 }
 
 .usuarios-search-input::placeholder {
-  color: #94a3b8;
+  color: var(--admin-text-muted);
   font-style: italic;
 }
 
-/* Stats específicas */
 .usuarios-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -89,10 +114,10 @@
 }
 
 .usuarios-stat-card {
-  background: white;
+  background: var(--admin-card-bg);
   padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: var(--admin-border-radius);
+  box-shadow: 0 1px 3px var(--admin-shadow-light);
   text-align: center;
   transition: transform 0.2s ease;
 }
@@ -105,50 +130,51 @@
   display: block;
   font-size: 32px;
   font-weight: 700;
-  color: #3b82f6;
+  color: var(--admin-primary-accent);
   margin-bottom: 8px;
 }
 
 .usuarios-stat-label {
-  color: #64748b;
+  color: var(--admin-text-muted);
   font-size: 14px;
   font-weight: 500;
 }
 
-/* Table específica */
 .usuarios-table-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  background: var(--admin-card-bg);
+  border-radius: var(--admin-border-radius);
+  box-shadow: 0 1px 3px var(--admin-shadow-light);
+  overflow-x: auto; /* Para responsividad de la tabla */
 }
 
 .usuarios-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px; /* Ancho mínimo para evitar que se comprima demasiado */
 }
 
 .usuarios-table th {
-  background: #f8fafc;
+  background: var(--admin-page-bg);
   padding: 16px 12px;
   text-align: left;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
+  color: var(--admin-text-normal);
+  border-bottom: 1px solid var(--admin-header-border);
   font-size: 14px;
+  white-space: nowrap; /* Evitar que los encabezados se rompan */
 }
 
 .usuarios-table td {
   padding: 16px 12px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--admin-page-bg);
   vertical-align: middle;
+  font-size: 14px; /* Consistencia de tamaño de fuente */
 }
 
 .usuarios-table tr:hover {
-  background-color: #f9fafb;
+  background-color: #eff6ff; 
 }
 
-/* Badges específicos */
 .usuarios-badge {
   padding: 4px 12px;
   border-radius: 20px;
@@ -156,32 +182,39 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
-
+.usuarios-badge-administrador { /* Para el rol de administrador si se muestra */
+    background-color: #fee2e2; /* Rojo claro, por ejemplo */
+    color: #b91c1c; /* Rojo oscuro */
+}
 .usuarios-badge-veterinario {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: var(--user-badge-vet-bg);
+  color: var(--user-badge-vet-text);
 }
-
 .usuarios-badge-propietario {
-  background-color: #f3e8ff;
-  color: #7c3aed;
+  background-color: var(--user-badge-owner-bg);
+  color: var(--user-badge-owner-text);
+}
+.usuarios-badge-desconocido { /* Estilo para rol desconocido */
+    background-color: #e5e7eb; /* Gris claro */
+    color: #4b5563; /* Gris oscuro */
 }
 
 .usuarios-badge-active {
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: var(--user-badge-active-bg);
+  color: var(--user-badge-active-text);
 }
 
 .usuarios-badge-inactive {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--user-badge-inactive-bg);
+  color: var(--user-badge-inactive-text);
 }
 
-/* Botones de acción específicos */
 .usuarios-action-buttons {
   display: flex;
   gap: 8px;
+  align-items: center; /* Alinear iconos verticalmente */
 }
 
 .usuarios-btn-icon {
@@ -189,18 +222,44 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px; /* Tamaño de icono ligeramente mayor */
   transition: all 0.2s ease;
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--admin-page-bg);
+  color: var(--admin-text-normal);
+  display: inline-flex; /* Para centrar el icono */
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* Evitar espacio extra por altura de línea */
 }
 
 .usuarios-btn-icon:hover {
-  background: #e5e7eb;
+  background: var(--admin-border-color);
   transform: scale(1.1);
 }
+.usuarios-btn-icon.edit { 
+    background-color: var(--user-badge-vet-bg); 
+    color: var(--user-badge-vet-text);
+}
+.usuarios-btn-icon.edit:hover {
+    background-color: #c4defa;
+}
 
-/* Modal específico */
+/* Estilos para botones de Activar/Desactivar */
+.usuarios-btn-icon.toggle-status-active { /* Botón para Desactivar (cuando está activo) */
+    background-color: var(--user-badge-inactive-bg);
+    color: var(--user-badge-inactive-text);
+}
+.usuarios-btn-icon.toggle-status-active:hover {
+    background-color: #fca5a5; 
+}
+.usuarios-btn-icon.toggle-status-inactive { /* Botón para Activar (cuando está inactivo) */
+    background-color: var(--user-badge-active-bg);
+    color: var(--user-badge-active-text);
+}
+.usuarios-btn-icon.toggle-status-inactive:hover {
+    background-color: #bbf7d0; 
+}
+
 .usuarios-modal-overlay {
   position: fixed;
   top: 0;
@@ -212,12 +271,13 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px; /* Espacio por si el modal es muy alto */
 }
 
 .usuarios-modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
+  background: var(--admin-card-bg);
+  border-radius: var(--admin-border-radius);
+  width: 100%; /* Ajustado para ser responsivo */
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
@@ -229,12 +289,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--admin-header-border);
 }
 
 .usuarios-modal-title {
   margin: 0;
-  color: #1e293b;
+  color: var(--admin-text-strong);
   font-size: 20px;
   font-weight: 600;
 }
@@ -244,7 +304,7 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--admin-text-muted);
   padding: 0;
   width: 32px;
   height: 32px;
@@ -253,17 +313,22 @@
   justify-content: center;
 }
 
-/* Form específico */
 .usuarios-form {
   padding: 24px;
 }
 
 .usuarios-form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; /* Por defecto una columna para móviles */
   gap: 20px;
   margin-bottom: 20px;
 }
+@media (min-width: 640px) { /* Dos columnas para pantallas más grandes */
+    .usuarios-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 
 .usuarios-form-group {
   display: flex;
@@ -273,23 +338,26 @@
 .usuarios-form-label {
   margin-bottom: 6px;
   font-weight: 500;
-  color: #374151;
+  color: var(--admin-text-normal);
   font-size: 14px;
 }
 
 .usuarios-form-input,
 .usuarios-form-select {
   padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border: 1px solid var(--admin-border-color);
+  border-radius: var(--admin-border-radius);
   font-size: 14px;
   transition: border-color 0.2s ease;
+  width: 100%; /* Asegurar que ocupen todo el ancho del contenedor del grid */
+  box-sizing: border-box; /* Incluir padding y border en el ancho total */
 }
+
 
 .usuarios-form-input:focus,
 .usuarios-form-select:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--admin-primary-accent);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -299,40 +367,39 @@
   justify-content: flex-end;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--admin-header-border);
 }
 
 .usuarios-btn-secondary {
   padding: 12px 24px;
-  border: 1px solid #d1d5db;
-  background: white;
-  color: #374151;
-  border-radius: 8px;
+  border: 1px solid var(--admin-border-color);
+  background: var(--admin-card-bg);
+  color: var(--admin-text-normal);
+  border-radius: var(--admin-border-radius);
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .usuarios-btn-secondary:hover {
-  background: #f9fafb;
+  background: var(--admin-page-bg);
 }
 
 .usuarios-btn-primary {
   padding: 12px 24px;
   border: none;
-  background: #3b82f6;
-  color: white;
-  border-radius: 8px;
+  background: var(--admin-primary-accent);
+  color: var(--admin-sidebar-text-active);
+  border-radius: var(--admin-border-radius);
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .usuarios-btn-primary:hover {
-  background: #2563eb;
+  background: var(--admin-primary-accent-dark);
 }
 
-/* Loading específico */
 .usuarios-loading-container {
   display: flex;
   flex-direction: column;
@@ -344,33 +411,28 @@
 .usuarios-loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #3b82f6;
+  border: 4px solid var(--admin-page-bg);
+  border-top: 4px solid var(--admin-primary-accent);
   border-radius: 50%;
   animation: usuarios-spin 1s linear infinite;
   margin-bottom: 16px;
 }
 
 @keyframes usuarios-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .usuarios-loading-text {
-  color: #6b7280;
+  color: var(--admin-text-muted);
   font-size: 16px;
 }
 
-/* Error específico */
 .usuarios-error-message {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: var(--admin-danger-bg);
+  color: var(--admin-danger-text-color);
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--admin-border-radius);
   margin-bottom: 24px;
   display: flex;
   justify-content: space-between;
@@ -378,43 +440,64 @@
 }
 
 .usuarios-btn-retry {
-  background: #dc2626;
-  color: white;
+  background: var(--admin-danger-text-color);
+  color: var(--admin-sidebar-text-active);
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
 }
+.usuarios-btn-retry:hover {
+    background-color: var(--admin-danger-bg-hover);
+}
 
-/* No data específico */
 .usuarios-no-data {
   text-align: center;
   padding: 40px;
-  color: #6b7280;
+  color: var(--admin-text-muted);
   font-style: italic;
 }
 
-/* Responsive específico */
-@media (max-width: 768px) {
-  .usuarios-form-grid {
-    grid-template-columns: 1fr;
-  }
+.password-requirements-modal {
+  font-size: 0.75em;
+  color: var(--admin-text-muted);
+  margin-top: 4px;
+  padding-left: 10px;
+  border-left: 2px solid var(--admin-border-color);
+  display: block; 
+}
+.password-requirements-modal p { 
+  margin-bottom: 2px;
+  font-weight: 500;
+  color: var(--admin-text-normal);
+}
+.password-requirements-modal ul { 
+  list-style-type: disc;
+  margin-left: 20px;
+  padding-left: 0;
+}
+.password-requirements-modal li { 
+  margin-bottom: 1px;
+}
 
+
+@media (max-width: 768px) {
+  /* .usuarios-form-grid se maneja arriba con @media (min-width: 640px) */
   .usuarios-header-content {
     flex-direction: column;
     gap: 16px;
+    align-items: stretch; /* Para que el botón ocupe el ancho */
   }
-
+  .usuarios-create-btn {
+    width: 100%; /* Botón de crear ocupa todo el ancho */
+  }
   .usuarios-stats-grid {
     grid-template-columns: 1fr;
   }
-
-  .usuarios-table-container {
-    overflow-x: auto;
-  }
-
+  /* .usuarios-table-container ya tiene overflow-x: auto */
   .usuarios-action-buttons {
-    flex-direction: column;
+    flex-direction: row; /* Mantener en fila si caben, o se ajustarán por gap */
+    flex-wrap: nowrap; /* Evitar que se rompan en múltiples líneas si es posible */
   }
 }
