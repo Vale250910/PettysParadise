@@ -1,4 +1,3 @@
-// src/componentes/Dashboard.jsx
 import React, { useState, useEffect } from "react";
 import Notification from "../componentes/Notification";
 import ModalConfirm from "../componentes/ModalConfirm";
@@ -25,8 +24,8 @@ export default function Dashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState("inicio");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showBackConfirm, setShowBackConfirm] = useState(false);
 
-  // Logout manual con confirmación modal
   const logout = () => {
     setShowLogoutConfirm(true);
   };
@@ -45,7 +44,6 @@ export default function Dashboard() {
     setShowLogoutConfirm(false);
   };
 
-  // Logout automático sin confirmación, usando notificación estilizada
   const autoLogout = () => {
     setNotification("Sesión cerrada por inactividad.");
     localStorage.removeItem("user");
@@ -53,6 +51,24 @@ export default function Dashboard() {
     setTimeout(() => {
       window.location.href = "/";
     }, 4000);
+  };
+
+  const confirmBackLogout = () => {
+    setShowBackConfirm(false);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setNotification("Sesión cerrada.");
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 2000);
+  };
+
+  const goHomeWithoutLogout = () => {
+    setShowBackConfirm(false);
+    setNotification("Redirigiendo al inicio...");
+    setTimeout(() => {
+      window.location.href = "/#Inicio";
+    }, 2000);
   };
 
   useEffect(() => {
@@ -74,14 +90,39 @@ export default function Dashboard() {
     }
   }, []);
 
+  // ✅ Back button detection - mejora para que funcione desde la primera carga
+  useEffect(() => {
+    const handleBackButton = (event) => {
+      event.preventDefault();
+      window.history.pushState(null, "", window.location.href);
+      setShowBackConfirm(true);
+    };
+  
+    // ✅ Forzar interacción inicial silenciosa
+    const simulateInteraction = () => {
+      document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    };
+  
+    // ✅ Forzar que el pushState quede registrado correctamente
+    setTimeout(() => {
+      simulateInteraction(); // simula una interacción
+      window.history.pushState(null, "", window.location.href);
+    }, 100);
+  
+    window.addEventListener("popstate", handleBackButton);
+  
+    return () => {
+      window.removeEventListener("popstate", handleBackButton);
+    };
+  }, []);
+  
+
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
   const handleNavClick = (item) => {
     setActiveItem(item);
-
-    // Ejemplo: mostrar notificación al ir a "citas"
     if (item === "citas") {
       setNotification("Tienes citas próximas.");
     } else {
@@ -89,7 +130,7 @@ export default function Dashboard() {
     }
   };
 
-  // ⏱ Inactividad de 15 minutos
+  // ⏱ Logout por inactividad (15 min)
   useEffect(() => {
     let timeout;
 
@@ -97,14 +138,13 @@ export default function Dashboard() {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         autoLogout();
-      }, 15 * 60 * 1000); // 15 minutos (ajustado)
+      }, 15 * 60 * 1000);
     };
 
-    // Eventos que reinician el temporizador
     const events = ["mousemove", "mousedown", "keypress", "scroll", "touchstart"];
     events.forEach(event => window.addEventListener(event, resetTimer));
 
-    resetTimer(); // iniciar por primera vez
+    resetTimer();
 
     return () => {
       clearTimeout(timeout);
@@ -144,14 +184,12 @@ export default function Dashboard() {
                 <span>Inicio</span>
               </Link>
             </li>
-
             <li className={activeItem === "mascotas" ? "active" : ""}>
               <Link to="/propietario/infomas" onClick={() => handleNavClick("mascotas")}>
                 <FaPaw />
                 <span>Mis Mascotas</span>
               </Link>
             </li>
-
             <li className={activeItem === "citas" ? "active" : ""}>
               <Link to="/propietario/citas" onClick={() => handleNavClick("citas")}>
                 <FaCalendarAlt />
@@ -169,17 +207,25 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* Aquí va la notificación */}
       {notification && (
         <Notification message={notification} onClose={() => setNotification("")} />
       )}
 
-      {/* Modal para confirmar logout */}
       {showLogoutConfirm && (
-        <ModalConfirm 
+        <ModalConfirm
           message="¿Estás seguro de que deseas cerrar sesión?"
           onConfirm={confirmLogout}
           onCancel={cancelLogout}
+        />
+      )}
+
+      {showBackConfirm && (
+        <ModalConfirm
+          message="¿Deseas cerrar sesión o volver al inicio?"
+          onConfirm={confirmBackLogout}
+          onCancel={goHomeWithoutLogout}
+          confirmText="Cerrar sesión"
+          cancelText="Ir al inicio"
         />
       )}
     </div>
