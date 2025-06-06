@@ -1,9 +1,32 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Search, Eye, Edit, Trash2, PawPrint, Calendar, Weight, Heart, X } from "lucide-react"
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  PawPrint,
+  Calendar,
+  Weight,
+  Heart,
+  X,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Upload,
+  User,
+  Dog,
+  Award,
+  CreditCard,
+  UserIcon as Male,
+  UserIcon as Female,
+} from "lucide-react"
 import "../../stylos/vet/GestionMascotas.css"
+import "../../stylos/vet/loadingvet.css"
 
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api"
 
 export default function MisPacientes() {
   const [showModal, setShowModal] = useState(false)
@@ -17,55 +40,52 @@ export default function MisPacientes() {
   const [imagePreview, setImagePreview] = useState(null)
   const [imageUrl, setImageUrl] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [notification, setNotification] = useState(null)
 
   // Obtener datos del veterinario
   const userData = JSON.parse(localStorage.getItem("user") || "{}")
-  const vetId = userData.id_usuario
+  const token = localStorage.getItem("token")
 
   useEffect(() => {
     fetchMascotas()
   }, [])
 
+  // Función para mostrar notificaciones
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type })
+    setTimeout(() => setNotification(null), 5000)
+  }
+
+  // Función para realizar peticiones autenticadas
+  const authenticatedFetch = async (url, options = {}) => {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || "Error en la petición")
+    }
+
+    return response.json()
+  }
+
   // Función para obtener todas las mascotas (para el veterinario)
   const fetchMascotas = async () => {
     setLoading(true)
     try {
-      // Simular datos de mascotas
-      const mockMascotas = [
-        {
-          cod_mas: 1,
-          nom_mas: "Max",
-          especie: "Perro",
-          raza: "Labrador",
-          edad: 3.5,
-          genero: "Macho",
-          peso: 28.5,
-          foto: "/placeholder.svg?height=100&width=100",
-          propietario: "Carlos Gómez",
-          id_pro: 103,
-          ultimaVisita: "2024-11-15",
-          proximaCita: "2024-12-15",
-        },
-        {
-          cod_mas: 2,
-          nom_mas: "Luna",
-          especie: "Gato",
-          raza: "Siamés",
-          edad: 2.0,
-          genero: "Hembra",
-          peso: 4.2,
-          foto: "/placeholder.svg?height=100&width=100",
-          propietario: "Carlos Gómez",
-          id_pro: 103,
-          ultimaVisita: "2024-10-20",
-          proximaCita: null,
-        },
-      ]
-
-      setMascotas(mockMascotas)
+      // Para veterinarios, obtener todas las mascotas del sistema
+      const response = await authenticatedFetch(`${API_BASE_URL}/vermas/mascotas`)
+      setMascotas(response || [])
     } catch (err) {
       console.error("Error al cargar mascotas:", err)
       setError("Error al cargar las mascotas")
+      showNotification("Error al cargar las mascotas", "error")
     } finally {
       setLoading(false)
     }
@@ -74,39 +94,44 @@ export default function MisPacientes() {
   // Función para registrar nueva mascota
   const registrarMascota = async (mascotaData) => {
     try {
-      console.log("Registrando mascota:", mascotaData)
+      await authenticatedFetch(`${API_BASE_URL}/mascota/create`, {
+        method: "POST",
+        body: JSON.stringify(mascotaData),
+      })
+
       await fetchMascotas() // Recargar mascotas
       setShowModal(false)
       resetForm()
+      showNotification("Mascota registrada exitosamente")
     } catch (err) {
       console.error("Error al registrar mascota:", err)
-      alert("Error al registrar la mascota")
+      showNotification("Error al registrar la mascota", "error")
     }
   }
 
-  // Función para actualizar mascota
-  const actualizarMascota = async (mascotaData) => {
+  // Función para subir imagen
+  const uploadImage = async (file) => {
+    const formData = new FormData()
+    formData.append("file", file)
+
     try {
-      console.log("Actualizando mascota:", mascotaData)
-      await fetchMascotas() // Recargar mascotas
-      setShowEditModal(false)
-      resetForm()
-    } catch (err) {
-      console.error("Error al actualizar mascota:", err)
-      alert("Error al actualizar la mascota")
-    }
-  }
+      const response = await fetch(`${API_BASE_URL}/upload/image`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
 
-  // Función para eliminar mascota
-  const eliminarMascota = async (codigo) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar esta mascota?")) {
-      try {
-        console.log("Eliminando mascota:", codigo)
-        await fetchMascotas() // Recargar mascotas
-      } catch (err) {
-        console.error("Error al eliminar mascota:", err)
-        alert("Error al eliminar la mascota")
+      if (!response.ok) {
+        throw new Error("Error al subir imagen")
       }
+
+      const result = await response.json()
+      return result.url
+    } catch (error) {
+      console.error("Error al subir imagen:", error)
+      throw error
     }
   }
 
@@ -118,13 +143,13 @@ export default function MisPacientes() {
     // Validaciones del archivo
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
     if (!validTypes.includes(file.type)) {
-      alert("Solo se permiten archivos JPG, PNG o WebP.")
+      showNotification("Solo se permiten archivos JPG, PNG o WebP.", "error")
       return
     }
 
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      alert("La imagen debe ser menor a 5MB.")
+      showNotification("La imagen debe ser menor a 5MB.", "error")
       return
     }
 
@@ -133,12 +158,17 @@ export default function MisPacientes() {
     reader.onloadend = () => setImagePreview(reader.result)
     reader.readAsDataURL(file)
 
-    // Simular subida
+    // Subir imagen
     setUploading(true)
-    setTimeout(() => {
-      setImageUrl(reader.result)
+    try {
+      const url = await uploadImage(file)
+      setImageUrl(url)
+      showNotification("Imagen subida exitosamente")
+    } catch (error) {
+      showNotification("Error al subir la imagen", "error")
+    } finally {
       setUploading(false)
-    }, 1000)
+    }
   }
 
   // Función para resetear formulario
@@ -151,28 +181,39 @@ export default function MisPacientes() {
   // Filtrar mascotas por búsqueda
   const mascotasFiltradas = mascotas.filter(
     (mascota) =>
-      mascota.nom_mas.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mascota.propietario.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mascota.raza.toLowerCase().includes(searchTerm.toLowerCase()),
+      mascota.nom_mas?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mascota.propietario?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mascota.raza?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   return (
-    <div className="mis-pacientes-container">
+    <div className="vet-pacientes-container">
+      {/* Notificaciones */}
+      {notification && (
+        <div className={`vet-notification ${notification.type}`}>
+          {notification.type === "success" ? <CheckCircle size={20} /> : <XCircle size={20} />}
+          <span>{notification.message}</span>
+          <button onClick={() => setNotification(null)}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="pacientes-header">
-        <div className="pacientes-title">
+      <div className="vet-pacientes-header">
+        <div className="vet-pacientes-title">
           <h2>Mis Pacientes</h2>
           <p>Gestiona la información de tus pacientes</p>
         </div>
-        <button className="add-paciente-btn" onClick={() => setShowModal(true)}>
+        <button className="vet-add-paciente-btn" onClick={() => setShowModal(true)}>
           <Plus size={20} /> Registrar Paciente
         </button>
       </div>
 
       {/* Barra de búsqueda */}
-      <div className="search-container">
-        <div className="search-box">
-          <Search size={20} className="search-icon" />
+      <div className="vet-search-container">
+        <div className="vet-search-box">
+          <Search size={20} className="vet-search-icon" />
           <input
             type="text"
             placeholder="Buscar por nombre, propietario o raza..."
@@ -183,14 +224,26 @@ export default function MisPacientes() {
       </div>
 
       {/* Lista de pacientes */}
-      <div className="pacientes-grid">
+      <div className="vet-pacientes-grid">
         {loading ? (
-          <div className="loading-message">Cargando pacientes...</div>
+          <div className="vet-loading-message">
+            <div className="vet-loading-spinner"></div>
+            Cargando pacientes...
+          </div>
         ) : error ? (
-          <div className="error-message">{error}</div>
+          <div className="vet-error-message">
+            <AlertCircle size={20} />
+            {error}
+          </div>
         ) : mascotasFiltradas.length === 0 ? (
-          <div className="empty-message">
-            {searchTerm ? "No se encontraron pacientes que coincidan con la búsqueda" : "No hay pacientes registrados"}
+          <div className="vet-empty-message">
+            <PawPrint size={48} />
+            <h3>No hay pacientes</h3>
+            <p>
+              {searchTerm
+                ? "No se encontraron pacientes que coincidan con la búsqueda"
+                : "No hay pacientes registrados"}
+            </p>
           </div>
         ) : (
           mascotasFiltradas.map((mascota) => (
@@ -205,13 +258,12 @@ export default function MisPacientes() {
                 setSelectedMascota(mascota)
                 setShowEditModal(true)
               }}
-              onDelete={() => eliminarMascota(mascota.cod_mas)}
             />
           ))
         )}
       </div>
 
-      {/* Modal Registrar Paciente */}
+      {/* Modales */}
       {showModal && (
         <RegistrarPacienteModal
           onClose={() => {
@@ -226,12 +278,10 @@ export default function MisPacientes() {
         />
       )}
 
-      {/* Modal Ver Paciente */}
       {showViewModal && selectedMascota && (
         <VerPacienteModal mascota={selectedMascota} onClose={() => setShowViewModal(false)} />
       )}
 
-      {/* Modal Editar Paciente */}
       {showEditModal && selectedMascota && (
         <EditarPacienteModal
           mascota={selectedMascota}
@@ -239,7 +289,7 @@ export default function MisPacientes() {
             setShowEditModal(false)
             resetForm()
           }}
-          onSubmit={actualizarMascota}
+          onSubmit={registrarMascota}
           imagePreview={imagePreview}
           imageUrl={imageUrl}
           uploading={uploading}
@@ -253,33 +303,33 @@ export default function MisPacientes() {
 // Componente PacienteCard
 function PacienteCard({ mascota, onView, onEdit, onDelete }) {
   return (
-    <div className="paciente-card">
-      <div className="paciente-avatar">
+    <div className="vet-paciente-card">
+      <div className="vet-paciente-avatar">
         <img src={mascota.foto || "/placeholder.svg"} alt={mascota.nom_mas} />
       </div>
-      <div className="paciente-info">
+      <div className="vet-paciente-info">
         <h3>{mascota.nom_mas}</h3>
-        <p className="paciente-raza">
+        <p className="vet-paciente-raza">
           {mascota.especie} • {mascota.raza}
         </p>
-        <p className="paciente-propietario">Propietario: {mascota.propietario}</p>
+        <p className="vet-paciente-propietario">Propietario: {mascota.propietario}</p>
 
-        <div className="paciente-stats">
-          <div className="stat-item">
+        <div className="vet-paciente-stats">
+          <div className="vet-stat-item">
             <Calendar size={14} />
             <span>{mascota.edad} años</span>
           </div>
-          <div className="stat-item">
+          <div className="vet-stat-item">
             <Weight size={14} />
             <span>{mascota.peso} kg</span>
           </div>
-          <div className="stat-item">
+          <div className="vet-stat-item">
             <Heart size={14} />
-            <span className={`genero ${mascota.genero.toLowerCase()}`}>{mascota.genero}</span>
+            <span className={`vet-genero ${mascota.genero.toLowerCase()}`}>{mascota.genero}</span>
           </div>
         </div>
 
-        <div className="paciente-dates">
+        <div className="vet-paciente-dates">
           <p>
             <strong>Última visita:</strong> {mascota.ultimaVisita || "No registrada"}
           </p>
@@ -291,14 +341,14 @@ function PacienteCard({ mascota, onView, onEdit, onDelete }) {
         </div>
       </div>
 
-      <div className="paciente-actions">
-        <button className="action-btn view-btn" onClick={onView}>
+      <div className="vet-paciente-actions">
+        <button className="vet-action-btn vet-view-btn" onClick={onView}>
           <Eye size={16} />
         </button>
-        <button className="action-btn edit-btn" onClick={onEdit}>
+        <button className="vet-action-btn vet-edit-btn" onClick={onEdit}>
           <Edit size={16} />
         </button>
-        <button className="action-btn delete-btn" onClick={onDelete}>
+        <button className="vet-action-btn vet-delete-btn" onClick={onDelete}>
           <Trash2 size={16} />
         </button>
       </div>
@@ -306,7 +356,7 @@ function PacienteCard({ mascota, onView, onEdit, onDelete }) {
   )
 }
 
-// Modal Registrar Paciente
+// Modal Registrar Paciente - Inspirado en el dashboard de propietario
 function RegistrarPacienteModal({ onClose, onSubmit, imagePreview, imageUrl, uploading, onImageChange }) {
   const [formData, setFormData] = useState({
     nom_mas: "",
@@ -338,48 +388,87 @@ function RegistrarPacienteModal({ onClose, onSubmit, imagePreview, imageUrl, upl
   }
 
   return (
-    <div className="modal" onClick={(e) => e.target.classList.contains("modal") && onClose()}>
-      <div className="modal-content modal-large">
-        <div className="modal-header">
-          <h2>Registrar Nuevo Paciente</h2>
-          <button className="close-btn" onClick={onClose}>
-            <X size={18} />
-          </button>
-        </div>
-        <div className="modal-body">
-          <form onSubmit={handleSubmit}>
-            {/* Upload de imagen */}
-            <div className="image-upload-container">
-              <label htmlFor="file-upload" className="image-upload-label">
-                <div className="image-preview">
-                  {imagePreview ? (
-                    <img src={imagePreview || "/placeholder.svg"} alt="Foto del paciente" />
-                  ) : (
-                    <div className="upload-placeholder">
-                      <PawPrint size={40} />
-                      <span>Subir foto (opcional)</span>
-                    </div>
-                  )}
-                </div>
-              </label>
-              <input
-                id="file-upload"
-                type="file"
-                accept="image/*"
-                onChange={onImageChange}
-                style={{ display: "none" }}
-              />
-              {uploading && <p className="uploading-text">Subiendo imagen...</p>}
+    <div className="vet-modal-overlay" onClick={(e) => e.target.classList.contains("vet-modal-overlay") && onClose()}>
+      <div className="vet-modal-container">
+        {/* Panel izquierdo decorativo */}
+        <div className="vet-modal-left-panel">
+          <div className="vet-modal-decoration">
+            <div className="vet-modal-icon-container">
+              <PawPrint className="vet-modal-icon" />
             </div>
+            <h2>Registro de Paciente</h2>
+            <p>Completa los datos del nuevo paciente</p>
+          </div>
+          <div className="vet-modal-circles">
+            <div className="vet-circle vet-circle-1"></div>
+            <div className="vet-circle vet-circle-2"></div>
+            <div className="vet-circle vet-circle-3"></div>
+          </div>
+        </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="nom_mas">Nombre:</label>
-                <input type="text" id="nom_mas" value={formData.nom_mas} onChange={handleChange} required />
+        {/* Panel derecho con formulario */}
+        <div className="vet-modal-right-panel">
+          <div className="vet-modal-header">
+            <button className="vet-modal-close-btn" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="vet-modal-content">
+            <form onSubmit={handleSubmit}>
+              {/* Upload de imagen */}
+              <div className="vet-image-upload-container">
+                <label htmlFor="vet-file-upload" className="vet-image-upload-label">
+                  <div className="vet-image-preview">
+                    {imagePreview ? (
+                      <img src={imagePreview || "/placeholder.svg"} alt="Foto del paciente" />
+                    ) : (
+                      <div className="vet-upload-placeholder">
+                        <Upload className="vet-upload-icon" />
+                        <span>Subir foto (opcional)</span>
+                      </div>
+                    )}
+                  </div>
+                </label>
+                <input
+                  id="vet-file-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={onImageChange}
+                  style={{ display: "none" }}
+                />
+                {uploading && <p className="vet-uploading-text">Subiendo imagen...</p>}
               </div>
-              <div className="form-group">
-                <label htmlFor="especie">Especie:</label>
-                <select id="especie" value={formData.especie} onChange={handleChange} required>
+
+              {/* Campos del formulario */}
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <User className="vet-field-icon" />
+                  <span>Nombre</span>
+                </label>
+                <input
+                  type="text"
+                  id="nom_mas"
+                  className="vet-form-input"
+                  placeholder="Nombre de la mascota"
+                  value={formData.nom_mas}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <Dog className="vet-field-icon" />
+                  <span>Especie</span>
+                </label>
+                <select
+                  id="especie"
+                  className="vet-form-input"
+                  value={formData.especie}
+                  onChange={handleChange}
+                  required
+                >
                   <option value="">Seleccionar especie</option>
                   <option value="Perro">Perro</option>
                   <option value="Gato">Gato</option>
@@ -389,47 +478,112 @@ function RegistrarPacienteModal({ onClose, onSubmit, imagePreview, imageUrl, upl
                   <option value="Otro">Otro</option>
                 </select>
               </div>
-            </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="raza">Raza:</label>
-                <input type="text" id="raza" value={formData.raza} onChange={handleChange} required />
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <Male className="vet-field-icon" />
+                  <span>Género</span>
+                </label>
+                <div className="vet-gender-options">
+                  <label className="vet-gender-option">
+                    <input type="radio" name="genero" value="Macho" onChange={handleChange} required />
+                    <div className="vet-gender-radio-button">
+                      <Male className="vet-gender-icon vet-male-icon" />
+                      <span>Macho</span>
+                    </div>
+                  </label>
+                  <label className="vet-gender-option">
+                    <input type="radio" name="genero" value="Hembra" onChange={handleChange} required />
+                    <div className="vet-gender-radio-button">
+                      <Female className="vet-gender-icon vet-female-icon" />
+                      <span>Hembra</span>
+                    </div>
+                  </label>
+                </div>
               </div>
-              <div className="form-group">
-                <label htmlFor="genero">Género:</label>
-                <select id="genero" value={formData.genero} onChange={handleChange} required>
-                  <option value="">Seleccionar género</option>
-                  <option value="Macho">Macho</option>
-                  <option value="Hembra">Hembra</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="edad">Edad (años):</label>
-                <input type="number" step="0.1" id="edad" value={formData.edad} onChange={handleChange} required />
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <Award className="vet-field-icon" />
+                  <span>Raza</span>
+                </label>
+                <input
+                  type="text"
+                  id="raza"
+                  className="vet-form-input"
+                  placeholder="Raza de la mascota"
+                  value={formData.raza}
+                  onChange={handleChange}
+                  required
+                />
               </div>
-              <div className="form-group">
-                <label htmlFor="peso">Peso (kg):</label>
-                <input type="number" step="0.1" id="peso" value={formData.peso} onChange={handleChange} required />
-              </div>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="id_pro">ID del Propietario:</label>
-              <input type="text" id="id_pro" value={formData.id_pro} onChange={handleChange} required />
-            </div>
-          </form>
-        </div>
-        <div className="modal-footer">
-          <button className="cancel-modal-btn" onClick={onClose}>
-            Cancelar
-          </button>
-          <button className="submit-btn" onClick={handleSubmit} disabled={uploading}>
-            {uploading ? "Subiendo..." : "Registrar Paciente"}
-          </button>
+              <div className="vet-form-row">
+                <div className="vet-form-group">
+                  <label className="vet-form-label">
+                    <Calendar className="vet-field-icon" />
+                    <span>Edad (años)</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="edad"
+                    className="vet-form-input"
+                    placeholder="Edad"
+                    value={formData.edad}
+                    onChange={handleChange}
+                    step="0.1"
+                    min="0"
+                    max="30"
+                    required
+                  />
+                </div>
+
+                <div className="vet-form-group">
+                  <label className="vet-form-label">
+                    <Weight className="vet-field-icon" />
+                    <span>Peso (kg)</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="peso"
+                    className="vet-form-input"
+                    placeholder="Peso"
+                    value={formData.peso}
+                    onChange={handleChange}
+                    step="0.1"
+                    min="0.1"
+                    max="200"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <CreditCard className="vet-field-icon" />
+                  <span>ID del Propietario</span>
+                </label>
+                <input
+                  type="text"
+                  id="id_pro"
+                  className="vet-form-input"
+                  placeholder="Número de documento del propietario"
+                  value={formData.id_pro}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="vet-form-actions">
+                <button type="submit" className="vet-submit-button" disabled={uploading}>
+                  {uploading ? "Subiendo imagen..." : "Registrar Paciente"}
+                </button>
+                <button type="button" className="vet-cancel-button" onClick={onClose}>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -439,21 +593,21 @@ function RegistrarPacienteModal({ onClose, onSubmit, imagePreview, imageUrl, upl
 // Modal Ver Paciente
 function VerPacienteModal({ mascota, onClose }) {
   return (
-    <div className="modal" onClick={(e) => e.target.classList.contains("modal") && onClose()}>
-      <div className="modal-content">
-        <div className="modal-header">
+    <div className="vet-modal-overlay" onClick={(e) => e.target.classList.contains("vet-modal-overlay") && onClose()}>
+      <div className="vet-modal-simple">
+        <div className="vet-modal-header">
           <h2>Información del Paciente</h2>
-          <button className="close-btn" onClick={onClose}>
+          <button className="vet-modal-close-btn" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
-        <div className="modal-body">
-          <div className="paciente-details-view">
-            <div className="paciente-photo">
+        <div className="vet-modal-body">
+          <div className="vet-paciente-details-view">
+            <div className="vet-paciente-photo">
               <img src={mascota.foto || "/placeholder.svg"} alt={mascota.nom_mas} />
             </div>
 
-            <div className="detail-group">
+            <div className="vet-detail-group">
               <h3>Información Básica</h3>
               <p>
                 <strong>Nombre:</strong> {mascota.nom_mas}
@@ -475,7 +629,7 @@ function VerPacienteModal({ mascota, onClose }) {
               </p>
             </div>
 
-            <div className="detail-group">
+            <div className="vet-detail-group">
               <h3>Propietario</h3>
               <p>
                 <strong>Nombre:</strong> {mascota.propietario}
@@ -484,22 +638,10 @@ function VerPacienteModal({ mascota, onClose }) {
                 <strong>ID:</strong> {mascota.id_pro}
               </p>
             </div>
-
-            <div className="detail-group">
-              <h3>Historial</h3>
-              <p>
-                <strong>Última visita:</strong> {mascota.ultimaVisita || "No registrada"}
-              </p>
-              {mascota.proximaCita && (
-                <p>
-                  <strong>Próxima cita:</strong> {mascota.proximaCita}
-                </p>
-              )}
-            </div>
           </div>
         </div>
-        <div className="modal-footer">
-          <button className="submit-btn" onClick={onClose}>
+        <div className="vet-modal-footer">
+          <button className="vet-submit-button" onClick={onClose}>
             Cerrar
           </button>
         </div>
@@ -522,10 +664,10 @@ function EditarPacienteModal({ mascota, onClose, onSubmit, imagePreview, imageUr
   })
 
   const handleChange = (e) => {
-    const { id, value } = e.target
+    const { id, value, name } = e.target
     setFormData((prev) => ({
       ...prev,
-      [id]: value,
+      [id || name]: value,
     }))
   }
 
@@ -541,45 +683,84 @@ function EditarPacienteModal({ mascota, onClose, onSubmit, imagePreview, imageUr
   }
 
   return (
-    <div className="modal" onClick={(e) => e.target.classList.contains("modal") && onClose()}>
-      <div className="modal-content modal-large">
-        <div className="modal-header">
-          <h2>Editar Paciente</h2>
-          <button className="close-btn" onClick={onClose}>
-            <X size={18} />
-          </button>
-        </div>
-        <div className="modal-body">
-          <form onSubmit={handleSubmit}>
-            {/* Upload de imagen */}
-            <div className="image-upload-container">
-              <label htmlFor="file-upload-edit" className="image-upload-label">
-                <div className="image-preview">
-                  {imagePreview ? (
-                    <img src={imagePreview || "/placeholder.svg"} alt="Foto del paciente" />
-                  ) : (
-                    <img src={mascota.foto || "/placeholder.svg"} alt={mascota.nom_mas} />
-                  )}
-                </div>
-              </label>
-              <input
-                id="file-upload-edit"
-                type="file"
-                accept="image/*"
-                onChange={onImageChange}
-                style={{ display: "none" }}
-              />
-              {uploading && <p className="uploading-text">Subiendo imagen...</p>}
+    <div className="vet-modal-overlay" onClick={(e) => e.target.classList.contains("vet-modal-overlay") && onClose()}>
+      <div className="vet-modal-container">
+        {/* Panel izquierdo decorativo */}
+        <div className="vet-modal-left-panel">
+          <div className="vet-modal-decoration">
+            <div className="vet-modal-icon-container">
+              <Edit className="vet-modal-icon" />
             </div>
+            <h2>Editar Paciente</h2>
+            <p>Actualiza los datos del paciente</p>
+          </div>
+          <div className="vet-modal-circles">
+            <div className="vet-circle vet-circle-1"></div>
+            <div className="vet-circle vet-circle-2"></div>
+            <div className="vet-circle vet-circle-3"></div>
+          </div>
+        </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="nom_mas">Nombre:</label>
-                <input type="text" id="nom_mas" value={formData.nom_mas} onChange={handleChange} required />
+        {/* Panel derecho con formulario */}
+        <div className="vet-modal-right-panel">
+          <div className="vet-modal-header">
+            <button className="vet-modal-close-btn" onClick={onClose}>
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="vet-modal-content">
+            <form onSubmit={handleSubmit}>
+              {/* Upload de imagen */}
+              <div className="vet-image-upload-container">
+                <label htmlFor="vet-file-upload-edit" className="vet-image-upload-label">
+                  <div className="vet-image-preview">
+                    {imagePreview ? (
+                      <img src={imagePreview || "/placeholder.svg"} alt="Foto del paciente" />
+                    ) : (
+                      <img src={mascota.foto || "/placeholder.svg"} alt={mascota.nom_mas} />
+                    )}
+                  </div>
+                </label>
+                <input
+                  id="vet-file-upload-edit"
+                  type="file"
+                  accept="image/*"
+                  onChange={onImageChange}
+                  style={{ display: "none" }}
+                />
+                {uploading && <p className="vet-uploading-text">Subiendo imagen...</p>}
               </div>
-              <div className="form-group">
-                <label htmlFor="especie">Especie:</label>
-                <select id="especie" value={formData.especie} onChange={handleChange} required>
+
+              {/* Campos del formulario */}
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <User className="vet-field-icon" />
+                  <span>Nombre</span>
+                </label>
+                <input
+                  type="text"
+                  id="nom_mas"
+                  className="vet-form-input"
+                  placeholder="Nombre de la mascota"
+                  value={formData.nom_mas}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <Dog className="vet-field-icon" />
+                  <span>Especie</span>
+                </label>
+                <select
+                  id="especie"
+                  className="vet-form-input"
+                  value={formData.especie}
+                  onChange={handleChange}
+                  required
+                >
                   <option value="Perro">Perro</option>
                   <option value="Gato">Gato</option>
                   <option value="Ave">Ave</option>
@@ -588,46 +769,126 @@ function EditarPacienteModal({ mascota, onClose, onSubmit, imagePreview, imageUr
                   <option value="Otro">Otro</option>
                 </select>
               </div>
-            </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="raza">Raza:</label>
-                <input type="text" id="raza" value={formData.raza} onChange={handleChange} required />
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <Male className="vet-field-icon" />
+                  <span>Género</span>
+                </label>
+                <div className="vet-gender-options">
+                  <label className="vet-gender-option">
+                    <input
+                      type="radio"
+                      name="genero"
+                      value="Macho"
+                      checked={formData.genero === "Macho"}
+                      onChange={handleChange}
+                      required
+                    />
+                    <div className="vet-gender-radio-button">
+                      <Male className="vet-gender-icon vet-male-icon" />
+                      <span>Macho</span>
+                    </div>
+                  </label>
+                  <label className="vet-gender-option">
+                    <input
+                      type="radio"
+                      name="genero"
+                      value="Hembra"
+                      checked={formData.genero === "Hembra"}
+                      onChange={handleChange}
+                      required
+                    />
+                    <div className="vet-gender-radio-button">
+                      <Female className="vet-gender-icon vet-female-icon" />
+                      <span>Hembra</span>
+                    </div>
+                  </label>
+                </div>
               </div>
-              <div className="form-group">
-                <label htmlFor="genero">Género:</label>
-                <select id="genero" value={formData.genero} onChange={handleChange} required>
-                  <option value="Macho">Macho</option>
-                  <option value="Hembra">Hembra</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="edad">Edad (años):</label>
-                <input type="number" step="0.1" id="edad" value={formData.edad} onChange={handleChange} required />
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <Award className="vet-field-icon" />
+                  <span>Raza</span>
+                </label>
+                <input
+                  type="text"
+                  id="raza"
+                  className="vet-form-input"
+                  placeholder="Raza de la mascota"
+                  value={formData.raza}
+                  onChange={handleChange}
+                  required
+                />
               </div>
-              <div className="form-group">
-                <label htmlFor="peso">Peso (kg):</label>
-                <input type="number" step="0.1" id="peso" value={formData.peso} onChange={handleChange} required />
-              </div>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="id_pro">ID del Propietario:</label>
-              <input type="text" id="id_pro" value={formData.id_pro} onChange={handleChange} required />
-            </div>
-          </form>
-        </div>
-        <div className="modal-footer">
-          <button className="cancel-modal-btn" onClick={onClose}>
-            Cancelar
-          </button>
-          <button className="submit-btn" onClick={handleSubmit} disabled={uploading}>
-            {uploading ? "Subiendo..." : "Actualizar Paciente"}
-          </button>
+              <div className="vet-form-row">
+                <div className="vet-form-group">
+                  <label className="vet-form-label">
+                    <Calendar className="vet-field-icon" />
+                    <span>Edad (años)</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="edad"
+                    className="vet-form-input"
+                    placeholder="Edad"
+                    value={formData.edad}
+                    onChange={handleChange}
+                    step="0.1"
+                    min="0"
+                    max="30"
+                    required
+                  />
+                </div>
+
+                <div className="vet-form-group">
+                  <label className="vet-form-label">
+                    <Weight className="vet-field-icon" />
+                    <span>Peso (kg)</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="peso"
+                    className="vet-form-input"
+                    placeholder="Peso"
+                    value={formData.peso}
+                    onChange={handleChange}
+                    step="0.1"
+                    min="0.1"
+                    max="200"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="vet-form-group">
+                <label className="vet-form-label">
+                  <CreditCard className="vet-field-icon" />
+                  <span>ID del Propietario</span>
+                </label>
+                <input
+                  type="text"
+                  id="id_pro"
+                  className="vet-form-input"
+                  placeholder="Número de documento del propietario"
+                  value={formData.id_pro}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="vet-form-actions">
+                <button type="submit" className="vet-submit-button" disabled={uploading}>
+                  {uploading ? "Subiendo imagen..." : "Actualizar Paciente"}
+                </button>
+                <button type="button" className="vet-cancel-button" onClick={onClose}>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

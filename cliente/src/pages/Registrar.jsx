@@ -576,9 +576,8 @@ export default function Registrar() {
                             }
                           }
                         }}
-                        placeholder="Escribe tu nombre"
+                        placeholder="Escribe tu primer nombre"
                         maxLength={30}
-                        style={{ textTransform: "uppercase" }}
                       />
                       {errors.nombre && <span className="error-message1">{errors.nombre.message}</span>}
                     </div>
@@ -636,9 +635,8 @@ export default function Registrar() {
                             }
                           }
                         }}
-                        placeholder="Escribe tu apellido"
+                        placeholder="Escribe tu primer apellido"
                         maxLength={30}
-                        style={{ textTransform: "uppercase" }}
                       />
                       {errors.apellido && <span className="error-message1">{errors.apellido.message}</span>}
                     </div>
@@ -701,9 +699,8 @@ export default function Registrar() {
                             }
                           }
                         }}
-                        placeholder="Escribe tu ciudad"
+                        placeholder="Escribe tu ciudad de residencia"
                         maxLength={50}
-                        style={{ textTransform: "uppercase" }}
                       />
                       {errors.ciudad && <span className="error-message1">{errors.ciudad.message}</span>}
                     </div>

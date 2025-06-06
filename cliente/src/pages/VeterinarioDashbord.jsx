@@ -162,7 +162,7 @@ const VeterinarioDashboard = () => {
             <IconMenu size={24} />
           </button>
 
-          <h1>{getCurrentPageTitle()}</h1>
+          <h1></h1>
           <div className="header-actions">
             <button onClick={handleLogout} className="vet-logout-btn-header">
               <IconLogout size={20} />
@@ -245,7 +245,7 @@ const VeterinarioDashboard = () => {
               )}
             </div>
           ) : (
-            /* Renderizar las páginas específicas */
+            /* Renderizar las páginas específicas usando Outlet */
             <Outlet />
           )}
         </main>

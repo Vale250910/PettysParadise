@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import axios from "axios"
-import "../../stylos/Admin/GestionRoles.css" // Asegúrate que la ruta es correcta
+import "../../stylos/Admin/GestionRoles.css" 
 import { FaUsers, FaUserShield, FaUserMd, FaPaw, FaListUl, FaTimes } from "react-icons/fa"; // Iconos mejorados
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000"

@@ -1,565 +1,668 @@
-/* Gestión de Citas - Estilos para Veterinario */
-.gestion-citas-container {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  /* Header */
-  .citas-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #e5e7eb;
-  }
-  
-  .citas-title h2 {
-    color: #2c3e50;
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0 0 8px 0;
-  }
-  
-  .citas-title p {
-    color: #7f8c8d;
-    font-size: 16px;
-    margin: 0;
-  }
-  
-  .add-cita-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(135deg, #5dade2 0%, #3498db 100%);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(93, 173, 226, 0.3);
-  }
-  
-  .add-cita-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(93, 173, 226, 0.4);
-  }
-  
-  /* Filtros */
-  .citas-filters {
-    display: flex;
-    gap: 20px;
-    align-items: end;
-    margin-bottom: 25px;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e5e7eb;
-  }
-  
-  .filter-group {
-    display: flex;
+/* Gestión de Citas - Dashboard Veterinario */
+.vet-gestion-citas-container {
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.vet-citas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.vet-citas-title h2 {
+  color: #1e40af;
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.vet-citas-title p {
+  color: #6b7280;
+  margin: 0.5rem 0 0 0;
+}
+
+.vet-add-cita-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.vet-add-cita-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px -1px rgba(0, 0, 0, 0.15);
+}
+
+/* Filtros mejorados */
+.vet-citas-filters {
+  display: flex;
+  gap: 1.5rem;
+  align-items: end;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+}
+
+.vet-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 150px;
+}
+
+.vet-filter-group label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.vet-filter-select,
+.vet-filter-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.vet-filter-select:focus,
+.vet-filter-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Rediseño del input de fecha - más profesional y minimalista */
+.vet-date-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vet-date-input-container input[type="date"] {
+  padding: 0.75rem 1rem;
+  padding-right: 2.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  background: white;
+  color: #374151;
+  font-family: inherit;
+  min-width: 160px;
+  cursor: pointer;
+}
+
+.vet-date-input-container input[type="date"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.vet-date-input-container input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.vet-calendar-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.vet-date-input-container:hover .vet-calendar-icon {
+  color: #3b82f6;
+}
+
+.vet-date-input-container input[type="date"]:focus + .vet-calendar-icon {
+  color: #3b82f6;
+}
+
+/* Placeholder personalizado para el input de fecha */
+.vet-date-input-container input[type="date"]:invalid {
+  color: #9ca3af;
+}
+
+.vet-date-input-container input[type="date"]:invalid:before {
+  content: attr(placeholder);
+  color: #9ca3af;
+}
+
+.vet-filter-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  margin-left: auto;
+}
+
+.vet-clear-filters-btn,
+.vet-refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.vet-clear-filters-btn {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+}
+
+.vet-clear-filters-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.vet-refresh-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+}
+
+.vet-refresh-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Vista toggle */
+.vet-view-toggle {
+  margin-bottom: 1.5rem;
+}
+
+.vet-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vet-view-btn.active {
+  background: #4f46e5;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Lista de citas */
+.vet-citas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vet-cita-card {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.vet-cita-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.vet-cita-date {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  padding: 1.25rem;
+  text-align: center;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.vet-cita-date .month {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.vet-cita-date .day {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+}
+
+.vet-cita-date .year {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.vet-cita-date .time {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.vet-cita-details {
+  flex: 1;
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vet-cita-info h3 {
+  color: #1e40af;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.vet-cita-meta {
+  display: flex;
+  gap: 1.25rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.vet-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.vet-cita-status {
+  margin-top: 0.75rem;
+}
+
+.vet-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vet-status-badge.confirmed {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.vet-status-badge.pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.vet-status-badge.canceled {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.vet-status-badge.completed {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.vet-status-badge.missed {
+  background: rgba(156, 163, 175, 0.1);
+  color: #9ca3af;
+}
+
+.vet-cita-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.vet-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.vet-action-btn.vet-view-btn {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.vet-action-btn.vet-view-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.vet-action-btn.vet-edit-btn {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.vet-action-btn.vet-edit-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+.vet-action-btn.vet-cancel-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.vet-action-btn.vet-cancel-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Modales */
+.vet-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.vet-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.vet-modal-view {
+  max-width: 500px;
+}
+
+.vet-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.vet-modal-header h2 {
+  color: #1e40af;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.vet-close-btn {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.vet-close-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.vet-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.vet-form-group {
+  margin-bottom: 1.5rem;
+}
+
+.vet-form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.vet-form-group input,
+.vet-form-group select,
+.vet-form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.vet-form-group input:focus,
+.vet-form-group select:focus,
+.vet-form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.vet-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.vet-error-message {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.vet-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.vet-cancel-modal-btn {
+  padding: 0.75rem 1.5rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vet-cancel-modal-btn:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.vet-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vet-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Detalles de cita */
+.vet-cita-details-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.vet-detail-group {
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.vet-detail-group h3 {
+  color: #1e40af;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.vet-detail-group p {
+  margin: 0.375rem 0;
+  color: #374151;
+}
+
+.vet-status-text.confirmed {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.vet-status-text.pending {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.vet-status-text.canceled {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.vet-status-text.completed {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.vet-status-text.missed {
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .vet-citas-header {
     flex-direction: column;
-    gap: 5px;
+    gap: 1rem;
+    align-items: stretch;
   }
-  
-  .filter-group label {
-    font-weight: 500;
-    color: #2c3e50;
-    font-size: 14px;
-  }
-  
-  .filter-select,
-  .filter-input {
-    padding: 8px 12px;
-    border: 1px solid #d5dbdb;
-    border-radius: 8px;
-    font-size: 14px;
-    min-width: 150px;
-    transition: border-color 0.3s ease;
-  }
-  
-  .filter-select:focus,
-  .filter-input:focus {
-    outline: none;
-    border-color: #5dade2;
-    box-shadow: 0 0 0 3px rgba(93, 173, 226, 0.1);
-  }
-  
-  .date-input-container {
-    position: relative;
-  }
-  
-  .calendar-icon {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #7f8c8d;
-    pointer-events: none;
-  }
-  
-  .clear-filters-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #ecf0f1;
-    color: #34495e;
-    border: 1px solid #bdc3c7;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-  }
-  
-  .clear-filters-btn:hover {
-    background: #d5dbdb;
-  }
-  
-  /* Vista toggle */
-  .view-toggle {
-    margin-bottom: 20px;
-  }
-  
-  .view-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #9b59b6;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-  }
-  
-  .view-btn.active {
-    background: #8e44ad;
-  }
-  
-  /* Lista de citas */
-  .citas-list {
-    display: flex;
+
+  .vet-citas-filters {
     flex-direction: column;
-    gap: 15px;
+    gap: 1rem;
   }
-  
-  .cita-card {
-    display: flex;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(93, 173, 226, 0.1);
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
-    transition: all 0.3s ease;
+
+  .vet-filter-group {
+    min-width: auto;
   }
-  
-  .cita-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(93, 173, 226, 0.15);
+
+  .vet-filter-actions {
+    margin-left: 0;
+    justify-content: stretch;
   }
-  
-  .cita-date {
-    background: linear-gradient(135deg, #5dade2 0%, #3498db 100%);
-    color: white;
-    padding: 20px;
-    text-align: center;
-    min-width: 120px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  
-  .cita-date .month {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-  }
-  
-  .cita-date .day {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 5px 0;
-  }
-  
-  .cita-date .year {
-    font-size: 12px;
-    opacity: 0.9;
-  }
-  
-  .cita-date .time {
-    font-size: 14px;
-    font-weight: 600;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-  }
-  
-  .cita-details {
+
+  .vet-filter-actions button {
     flex: 1;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
   }
-  
-  .cita-info h3 {
-    color: #2c3e50;
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0 0 10px 0;
+
+  .vet-date-input-container input[type="date"] {
+    min-width: 100%;
   }
-  
-  .cita-meta {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 10px;
-  }
-  
-  .meta-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #7f8c8d;
-    font-size: 14px;
-  }
-  
-  .cita-status {
-    margin-top: 10px;
-  }
-  
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .status-badge.confirmed {
-    background: rgba(39, 174, 96, 0.1);
-    color: #27ae60;
-  }
-  
-  .status-badge.pending {
-    background: rgba(243, 156, 18, 0.1);
-    color: #f39c12;
-  }
-  
-  .status-badge.canceled {
-    background: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
-  }
-  
-  .status-badge.completed {
-    background: rgba(155, 89, 182, 0.1);
-    color: #9b59b6;
-  }
-  
-  .status-badge.missed {
-    background: rgba(149, 165, 166, 0.1);
-    color: #95a5a6;
-  }
-  
-  .cita-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  
-  .action-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .view-btn {
-    background: #ecf0f1;
-    color: #34495e;
-  }
-  
-  .view-btn:hover {
-    background: #d5dbdb;
-  }
-  
-  .edit-btn {
-    background: rgba(93, 173, 226, 0.1);
-    color: #5dade2;
-  }
-  
-  .edit-btn:hover {
-    background: rgba(93, 173, 226, 0.2);
-  }
-  
-  .cancel-btn {
-    background: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
-  }
-  
-  .cancel-btn:hover {
-    background: rgba(231, 76, 60, 0.2);
-  }
-  
-  /* Modales */
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  .modal-content {
-    background: white;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  }
-  
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .modal-header h2 {
-    color: #2c3e50;
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0;
-  }
-  
-  .close-btn {
-    background: none;
-    border: none;
-    color: #7f8c8d;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: color 0.3s ease;
-  }
-  
-  .close-btn:hover {
-    color: #e74c3c;
-  }
-  
-  .modal-body {
-    padding: 20px;
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    color: #2c3e50;
-  }
-  
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d5dbdb;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.3s ease;
-  }
-  
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #5dade2;
-    box-shadow: 0 0 0 3px rgba(93, 173, 226, 0.1);
-  }
-  
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-  }
-  
-  .error-message {
-    color: #e74c3c;
-    font-size: 12px;
-    margin-top: 4px;
-  }
-  
-  .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding: 20px;
-    border-top: 1px solid #e5e7eb;
-  }
-  
-  .cancel-modal-btn {
-    padding: 10px 20px;
-    background: #ecf0f1;
-    color: #34495e;
-    border: 1px solid #bdc3c7;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .cancel-modal-btn:hover {
-    background: #d5dbdb;
-  }
-  
-  .submit-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #5dade2 0%, #3498db 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .submit-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(93, 173, 226, 0.3);
-  }
-  
-  /* Detalles de cita */
-  .cita-details-view {
-    display: flex;
+
+  .vet-cita-card {
     flex-direction: column;
-    gap: 20px;
   }
-  
-  .detail-group {
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border-left: 4px solid #5dade2;
+
+  .vet-cita-date {
+    min-width: auto;
+    padding: 1rem;
   }
-  
-  .detail-group h3 {
-    color: #2c3e50;
-    font-size: 16px;
-    font-weight: 600;
-    margin: 0 0 10px 0;
+
+  .vet-cita-actions {
+    justify-content: center;
   }
-  
-  .detail-group p {
-    margin: 5px 0;
-    color: #34495e;
+
+  .vet-form-row {
+    grid-template-columns: 1fr;
   }
-  
-  .status-text.confirmed {
-    color: #27ae60;
-    font-weight: 600;
+
+  .vet-modal-content {
+    width: 95%;
+    margin: 0.5rem;
   }
-  
-  .status-text.pending {
-    color: #f39c12;
-    font-weight: 600;
+
+  .vet-modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
   }
-  
-  .status-text.canceled {
-    color: #e74c3c;
-    font-weight: 600;
+
+  .vet-modal-footer button {
+    width: 100%;
   }
-  
-  .status-text.completed {
-    color: #9b59b6;
-    font-weight: 600;
-  }
-  
-  .status-text.missed {
-    color: #95a5a6;
-    font-weight: 600;
-  }
-  
-  /* Estados de carga y error */
-  .loading-message,
-  .error-message,
-  .empty-message {
-    text-align: center;
-    padding: 40px 20px;
-    color: #7f8c8d;
-    font-size: 16px;
-  }
-  
-  .error-message {
-    color: #e74c3c;
-  }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .citas-header {
-      flex-direction: column;
-      gap: 15px;
-      align-items: stretch;
-    }
-  
-    .citas-filters {
-      flex-direction: column;
-      gap: 15px;
-    }
-  
-    .filter-select,
-    .filter-input {
-      min-width: auto;
-    }
-  
-    .cita-card {
-      flex-direction: column;
-    }
-  
-    .cita-date {
-      min-width: auto;
-      padding: 15px;
-    }
-  
-    .cita-actions {
-      justify-content: center;
-    }
-  
-    .form-row {
-      grid-template-columns: 1fr;
-    }
-  
-    .modal-content {
-      width: 95%;
-      margin: 10px;
-    }
-  }
-  
+}

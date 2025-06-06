@@ -8,14 +8,20 @@ import {
   X,
   Check,
   RefreshCw,
-  CalendarIcon,
+  Calendar,
   RotateCcw,
   Plus,
   Clock,
   User,
   Stethoscope,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
 } from "lucide-react"
 import "../../stylos/vet/GestionCitas.css"
+import "../../stylos/vet/loadingvet.css"
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api"
 
 export default function GestionCitas() {
   const [showModal, setShowModal] = useState(false)
@@ -34,56 +40,60 @@ export default function GestionCitas() {
   const [servicios, setServicios] = useState([])
   const [veterinarios, setVeterinarios] = useState([])
 
+  // Estados para notificaciones
+  const [notification, setNotification] = useState(null)
+
   // Obtener datos del veterinario
   const userData = JSON.parse(localStorage.getItem("user") || "{}")
-  const vetId = userData.id_usuario
+  const token = localStorage.getItem("token")
 
   // Cargar datos al iniciar
   useEffect(() => {
     fetchCitas()
-    fetchPropietarios()
     fetchServicios()
     fetchVeterinarios()
+    fetchPropietarios()
   }, [])
+
+  // Función para mostrar notificaciones
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type })
+    setTimeout(() => setNotification(null), 5000)
+  }
+
+  // Función para realizar peticiones autenticadas
+  const authenticatedFetch = async (url, options = {}) => {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || "Error en la petición")
+    }
+
+    return response.json()
+  }
 
   // Función para obtener citas del veterinario
   const fetchCitas = async () => {
     setLoading(true)
     try {
-      // Simular datos de citas para el veterinario
-      const mockCitas = [
-        {
-          cod_cit: 1,
-          fech_cit: "2024-12-10",
-          hora: "10:00:00",
-          estado: "CONFIRMADA",
-          notas: "Chequeo general",
-          propietario: "Carlos Gómez",
-          mascota: "Max",
-          servicio: "Consulta General",
-          cod_mas: 1,
-          cod_ser: 1,
-          id_pro: 103,
-        },
-        {
-          cod_cit: 2,
-          fech_cit: "2024-12-11",
-          hora: "14:30:00",
-          estado: "PENDIENTE",
-          notas: "Vacunación antirrábica",
-          propietario: "Carlos Gómez",
-          mascota: "Luna",
-          servicio: "Vacunación",
-          cod_mas: 2,
-          cod_ser: 2,
-          id_pro: 103,
-        },
-      ]
+      // Obtener TODAS las citas del sistema
+      const response = await authenticatedFetch(`${API_BASE_URL}/citas`)
 
-      setCitas(mockCitas)
+      // Mostrar todas las citas para el veterinario (no filtrar por id_vet)
+      // El veterinario puede ver todas las citas del sistema
+      setCitas(response || [])
     } catch (err) {
       console.error("Error al cargar citas:", err)
       setError("Error al cargar las citas")
+      showNotification("Error al cargar las citas", "error")
     } finally {
       setLoading(false)
     }
@@ -92,8 +102,10 @@ export default function GestionCitas() {
   // Función para obtener propietarios
   const fetchPropietarios = async () => {
     try {
-      const mockPropietarios = [{ id_pro: 103, nombre: "Carlos", apellido: "Gómez", email: "carlos@email.com" }]
-      setPropietarios(mockPropietarios)
+      // Obtener usuarios con rol de propietario
+      const response = await authenticatedFetch(`${API_BASE_URL}/roles/usuarios`)
+      const propietariosData = response.usuarios?.filter((user) => user.id_rol === 3) || []
+      setPropietarios(propietariosData)
     } catch (err) {
       console.error("Error al cargar propietarios:", err)
     }
@@ -102,11 +114,10 @@ export default function GestionCitas() {
   // Función para obtener mascotas por propietario
   const fetchMascotasPorPropietario = async (idPropietario) => {
     try {
-      const mockMascotas = [
-        { cod_mas: 1, nom_mas: "Max", especie: "Perro", raza: "Labrador", id_pro: 103 },
-        { cod_mas: 2, nom_mas: "Luna", especie: "Gato", raza: "Siamés", id_pro: 103 },
-      ]
-      return mockMascotas.filter((m) => m.id_pro === Number.parseInt(idPropietario))
+      // Simular endpoint para obtener mascotas por propietario
+      // En tu API real, necesitarías un endpoint específico para esto
+      const response = await authenticatedFetch(`${API_BASE_URL}/vermas/mascotas?propietario=${idPropietario}`)
+      return response || []
     } catch (err) {
       console.error("Error al cargar mascotas:", err)
       return []
@@ -116,14 +127,8 @@ export default function GestionCitas() {
   // Función para obtener servicios
   const fetchServicios = async () => {
     try {
-      const mockServicios = [
-        { cod_ser: 1, nom_ser: "Consulta General", precio: 45000 },
-        { cod_ser: 2, nom_ser: "Vacunación Antirrábica", precio: 30000 },
-        { cod_ser: 3, nom_ser: "Desparasitación", precio: 25000 },
-        { cod_ser: 4, nom_ser: "Esterilización", precio: 70000 },
-        { cod_ser: 5, nom_ser: "Baño y Peluquería", precio: 35000 },
-      ]
-      setServicios(mockServicios)
+      const response = await authenticatedFetch(`${API_BASE_URL}/servicios/servicios`)
+      setServicios(response || [])
     } catch (err) {
       console.error("Error al cargar servicios:", err)
     }
@@ -132,10 +137,8 @@ export default function GestionCitas() {
   // Función para obtener veterinarios
   const fetchVeterinarios = async () => {
     try {
-      const mockVeterinarios = [
-        { id_vet: 102, nombre: "Luis", apellido: "Martínez", especialidad: "Cirugía y diagnóstico" },
-      ]
-      setVeterinarios(mockVeterinarios)
+      const response = await authenticatedFetch(`${API_BASE_URL}/servicios/veterinarios`)
+      setVeterinarios(response || [])
     } catch (err) {
       console.error("Error al cargar veterinarios:", err)
     }
@@ -144,24 +147,34 @@ export default function GestionCitas() {
   // Función para crear una nueva cita
   const crearCita = async (citaData) => {
     try {
-      console.log("Creando cita:", citaData)
+      await authenticatedFetch(`${API_BASE_URL}/citas`, {
+        method: "POST",
+        body: JSON.stringify(citaData),
+      })
+
       await fetchCitas() // Recargar citas
       setShowModal(false)
+      showNotification("Cita creada exitosamente")
     } catch (err) {
       console.error("Error al crear cita:", err)
-      alert("Error al crear la cita")
+      showNotification("Error al crear la cita", "error")
     }
   }
 
   // Función para actualizar una cita
   const actualizarCita = async (citaData) => {
     try {
-      console.log("Actualizando cita:", citaData)
+      await authenticatedFetch(`${API_BASE_URL}/citas/${citaData.cod_cit}`, {
+        method: "PUT",
+        body: JSON.stringify(citaData),
+      })
+
       await fetchCitas() // Recargar citas
       setShowEditModal(false)
+      showNotification("Cita actualizada exitosamente")
     } catch (err) {
       console.error("Error al actualizar cita:", err)
-      alert("Error al actualizar la cita")
+      showNotification("Error al actualizar la cita", "error")
     }
   }
 
@@ -169,11 +182,15 @@ export default function GestionCitas() {
   const cancelarCita = async (codigo) => {
     if (window.confirm("¿Estás seguro de que deseas cancelar esta cita?")) {
       try {
-        console.log("Cancelando cita:", codigo)
+        await authenticatedFetch(`${API_BASE_URL}/citas/${codigo}/cancelar`, {
+          method: "PUT",
+        })
+
         await fetchCitas() // Recargar citas
+        showNotification("Cita cancelada exitosamente")
       } catch (err) {
         console.error("Error al cancelar cita:", err)
-        alert("Error al cancelar la cita")
+        showNotification("Error al cancelar la cita", "error")
       }
     }
   }
@@ -202,25 +219,36 @@ export default function GestionCitas() {
   })
 
   return (
-    <div className="gestion-citas-container">
+    <div className="vet-gestion-citas-container">
+      {/* Notificaciones */}
+      {notification && (
+        <div className={`vet-notification ${notification.type}`}>
+          {notification.type === "success" ? <CheckCircle size={20} /> : <XCircle size={20} />}
+          <span>{notification.message}</span>
+          <button onClick={() => setNotification(null)}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="citas-header">
-        <div className="citas-title">
+      <div className="vet-citas-header">
+        <div className="vet-citas-title">
           <h2>Gestión de Citas</h2>
           <p>Administra las citas de tus pacientes</p>
         </div>
-        <button className="add-cita-btn" onClick={() => setShowModal(true)}>
+        <button className="vet-add-cita-btn" onClick={() => setShowModal(true)}>
           <Plus size={20} /> Nueva Cita
         </button>
       </div>
 
       {/* Filters */}
-      <div className="citas-filters">
-        <div className="filter-group">
+      <div className="vet-citas-filters">
+        <div className="vet-filter-group">
           <label htmlFor="filter-status">Estado:</label>
           <select
             id="filter-status"
-            className="filter-select"
+            className="vet-filter-select"
             value={filtroEstado}
             onChange={(e) => setFiltroEstado(e.target.value)}
           >
@@ -232,39 +260,55 @@ export default function GestionCitas() {
             <option value="NO_ASISTIDA">No Asistida</option>
           </select>
         </div>
-        <div className="filter-group">
+        <div className="vet-filter-group">
           <label htmlFor="filter-date">Fecha:</label>
-          <div className="date-input-container">
+          <div className="vet-date-input-container">
             <input
               type="date"
               id="filter-date"
-              className="filter-input"
+              className="vet-filter-input"
               value={filtroFecha}
               onChange={(e) => setFiltroFecha(e.target.value)}
+              placeholder="Seleccionar fecha"
             />
-            <CalendarIcon size={16} className="calendar-icon" />
+            <Calendar size={16} className="vet-calendar-icon" />
           </div>
         </div>
-        <button className="clear-filters-btn" onClick={limpiarFiltros}>
-          <RotateCcw size={16} /> Limpiar filtros
-        </button>
+        <div className="vet-filter-actions">
+          <button className="vet-clear-filters-btn" onClick={limpiarFiltros}>
+            <RotateCcw size={16} /> Limpiar filtros
+          </button>
+          <button className="vet-refresh-btn" onClick={fetchCitas}>
+            <RefreshCw size={16} /> Actualizar
+          </button>
+        </div>
       </div>
 
       {/* Vista de lista */}
-      <div className="view-toggle">
-        <button className="view-btn active">
-          <List size={16} /> Lista de Citas
+      <div className="vet-view-toggle">
+        <button className="vet-view-btn active">
+          <List size={16} /> Lista de Citas ({citasFiltradas.length})
         </button>
       </div>
 
       {/* Lista de citas */}
-      <div className="citas-list">
+      <div className="vet-citas-list">
         {loading ? (
-          <div className="loading-message">Cargando citas...</div>
+          <div className="vet-loading-message">
+            <div className="vet-loading-spinner"></div>
+            Cargando citas...
+          </div>
         ) : error ? (
-          <div className="error-message">{error}</div>
+          <div className="vet-error-message">
+            <AlertCircle size={20} />
+            {error}
+          </div>
         ) : citasFiltradas.length === 0 ? (
-          <div className="empty-message">No hay citas que coincidan con los filtros seleccionados</div>
+          <div className="vet-empty-message">
+            <Calendar size={48} />
+            <h3>No hay citas</h3>
+            <p>No hay citas que coincidan con los filtros seleccionados</p>
+          </div>
         ) : (
           citasFiltradas.map((cita) => (
             <CitaCard
@@ -293,6 +337,7 @@ export default function GestionCitas() {
           servicios={servicios}
           veterinarios={veterinarios}
           fetchMascotasPorPropietario={fetchMascotasPorPropietario}
+          currentVetId={userData.id_usuario}
         />
       )}
 
@@ -315,13 +360,16 @@ export default function GestionCitas() {
   )
 }
 
+// Resto de los componentes permanecen igual...
+// [CitaCard, NuevaCitaModal, VerCitaModal, EditarCitaModal]
+
 // Componente CitaCard
 function CitaCard({ cita, onView, onEdit, onCancel }) {
   const fecha = new Date(cita.fech_cit)
   const mes = fecha.toLocaleString("es", { month: "short" }).toUpperCase()
   const dia = fecha.getDate()
   const año = fecha.getFullYear()
-  const hora = cita.hora.substring(0, 5)
+  const hora = cita.hora ? cita.hora.substring(0, 5) : "Sin hora"
 
   let statusClass = ""
   let statusIcon = null
@@ -353,40 +401,40 @@ function CitaCard({ cita, onView, onEdit, onCancel }) {
   }
 
   return (
-    <div className="cita-card">
-      <div className="cita-date">
+    <div className="vet-cita-card">
+      <div className="vet-cita-date">
         <div className="month">{mes}</div>
         <div className="day">{dia}</div>
         <div className="year">{año}</div>
         <div className="time">{hora}</div>
       </div>
-      <div className="cita-details">
-        <div className="cita-info">
-          <h3>{cita.servicio}</h3>
-          <div className="cita-meta">
-            <span className="meta-item">
-              <User size={16} /> {cita.propietario}
+      <div className="vet-cita-details">
+        <div className="vet-cita-info">
+          <h3>{cita.servicio || "Servicio no especificado"}</h3>
+          <div className="vet-cita-meta">
+            <span className="vet-meta-item">
+              <User size={16} /> {cita.propietario || "Propietario no especificado"}
             </span>
-            <span className="meta-item">
-              <Stethoscope size={16} /> {cita.mascota}
+            <span className="vet-meta-item">
+              <Stethoscope size={16} /> {cita.mascota || "Mascota no especificada"}
             </span>
           </div>
-          <div className="cita-status">
-            <span className={`status-badge ${statusClass}`}>
+          <div className="vet-cita-status">
+            <span className={`vet-status-badge ${statusClass}`}>
               {statusIcon} {cita.estado}
             </span>
           </div>
         </div>
-        <div className="cita-actions">
-          <button className="action-btn view-btn" onClick={onView}>
+        <div className="vet-cita-actions">
+          <button className="vet-action-btn vet-view-btn" onClick={onView}>
             <Eye size={16} /> Ver
           </button>
           {cita.estado !== "CANCELADA" && cita.estado !== "REALIZADA" && (
             <>
-              <button className="action-btn edit-btn" onClick={onEdit}>
+              <button className="vet-action-btn vet-edit-btn" onClick={onEdit}>
                 <Edit size={16} /> Editar
               </button>
-              <button className="action-btn cancel-btn" onClick={onCancel}>
+              <button className="vet-action-btn vet-cancel-btn" onClick={onCancel}>
                 <X size={16} /> Cancelar
               </button>
             </>
@@ -398,12 +446,20 @@ function CitaCard({ cita, onView, onEdit, onCancel }) {
 }
 
 // Modal Nueva Cita
-function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinarios, fetchMascotasPorPropietario }) {
+function NuevaCitaModal({
+  onClose,
+  onSubmit,
+  propietarios,
+  servicios,
+  veterinarios,
+  fetchMascotasPorPropietario,
+  currentVetId,
+}) {
   const [formData, setFormData] = useState({
     id_propietario: "",
     cod_mas: "",
     cod_ser: "",
-    id_vet: "",
+    id_vet: currentVetId || "",
     fech_cit: "",
     hora: "",
     notas: "",
@@ -481,17 +537,17 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
   }
 
   return (
-    <div className="modal" onClick={(e) => e.target.classList.contains("modal") && onClose()}>
-      <div className="modal-content">
-        <div className="modal-header">
+    <div className="vet-modal" onClick={(e) => e.target.classList.contains("vet-modal") && onClose()}>
+      <div className="vet-modal-content">
+        <div className="vet-modal-header">
           <h2>Nueva Cita</h2>
-          <button className="close-btn" onClick={onClose}>
+          <button className="vet-close-btn" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
-        <div className="modal-body">
+        <div className="vet-modal-body">
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="id_propietario">Propietario:</label>
               <select id="id_propietario" value={formData.id_propietario} onChange={handleChange} required>
                 <option value="">Seleccionar propietario</option>
@@ -503,7 +559,7 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="cod_mas">Mascota:</label>
               <select
                 id="cod_mas"
@@ -521,7 +577,7 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="cod_ser">Servicio:</label>
               <select id="cod_ser" value={formData.cod_ser} onChange={handleChange} required>
                 <option value="">Seleccionar servicio</option>
@@ -533,7 +589,7 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="id_vet">Veterinario:</label>
               <select id="id_vet" value={formData.id_vet} onChange={handleChange} required>
                 <option value="">Seleccionar veterinario</option>
@@ -545,8 +601,8 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
               </select>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
+            <div className="vet-form-row">
+              <div className="vet-form-group">
                 <label htmlFor="fech_cit">Fecha:</label>
                 <input
                   type="date"
@@ -557,9 +613,9 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
                   max={maxDateStr}
                   required
                 />
-                {errors.fech_cit && <p className="error-message">{errors.fech_cit}</p>}
+                {errors.fech_cit && <p className="vet-error-message">{errors.fech_cit}</p>}
               </div>
-              <div className="form-group">
+              <div className="vet-form-group">
                 <label htmlFor="hora">Hora:</label>
                 <input
                   type="time"
@@ -570,21 +626,21 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
                   max="19:00"
                   required
                 />
-                {errors.hora && <p className="error-message">{errors.hora}</p>}
+                {errors.hora && <p className="vet-error-message">{errors.hora}</p>}
               </div>
             </div>
 
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="notas">Notas adicionales:</label>
               <textarea id="notas" rows={3} value={formData.notas} onChange={handleChange} />
             </div>
           </form>
         </div>
-        <div className="modal-footer">
-          <button className="cancel-modal-btn" onClick={onClose}>
+        <div className="vet-modal-footer">
+          <button className="vet-cancel-modal-btn" onClick={onClose}>
             Cancelar
           </button>
-          <button className="submit-btn" onClick={handleSubmit}>
+          <button className="vet-submit-btn" onClick={handleSubmit}>
             Agendar Cita
           </button>
         </div>
@@ -596,55 +652,55 @@ function NuevaCitaModal({ onClose, onSubmit, propietarios, servicios, veterinari
 // Modal Ver Cita
 function VerCitaModal({ cita, onClose }) {
   return (
-    <div className="modal" onClick={(e) => e.target.classList.contains("modal") && onClose()}>
-      <div className="modal-content modal-view">
-        <div className="modal-header">
+    <div className="vet-modal" onClick={(e) => e.target.classList.contains("vet-modal") && onClose()}>
+      <div className="vet-modal-content vet-modal-view">
+        <div className="vet-modal-header">
           <h2>Detalles de la Cita</h2>
-          <button className="close-btn" onClick={onClose}>
+          <button className="vet-close-btn" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
-        <div className="modal-body">
-          <div className="cita-details-view">
-            <div className="detail-group">
+        <div className="vet-modal-body">
+          <div className="vet-cita-details-view">
+            <div className="vet-detail-group">
               <h3>Información General</h3>
               <p>
                 <strong>Estado:</strong>{" "}
-                <span className={`status-text ${cita.estado.toLowerCase()}`}>{cita.estado}</span>
+                <span className={`vet-status-text ${cita.estado.toLowerCase()}`}>{cita.estado}</span>
               </p>
               <p>
                 <strong>Fecha:</strong> {new Date(cita.fech_cit).toLocaleDateString()}
               </p>
               <p>
-                <strong>Hora:</strong> {cita.hora.substring(0, 5)}
+                <strong>Hora:</strong> {cita.hora ? cita.hora.substring(0, 5) : "Sin hora"}
               </p>
             </div>
 
-            <div className="detail-group">
+            <div className="vet-detail-group">
               <h3>Paciente</h3>
               <p>
-                <strong>Propietario:</strong> {cita.propietario}
+                <strong>Propietario:</strong> {cita.propietario || "No especificado"}
               </p>
               <p>
-                <strong>Mascota:</strong> {cita.mascota}
+                <strong>Mascota:</strong> {cita.mascota || "No especificada"}
               </p>
             </div>
 
-            <div className="detail-group">
+            <div className="vet-detail-group">
               <h3>Servicio</h3>
-              <p>{cita.servicio}</p>
+              <p>{cita.servicio || "No especificado"}</p>
             </div>
 
             {cita.notas && (
-              <div className="detail-group">
+              <div className="vet-detail-group">
                 <h3>Notas</h3>
                 <p>{cita.notas}</p>
               </div>
             )}
           </div>
         </div>
-        <div className="modal-footer">
-          <button className="submit-btn" onClick={onClose}>
+        <div className="vet-modal-footer">
+          <button className="vet-submit-btn" onClick={onClose}>
             Cerrar
           </button>
         </div>
@@ -670,7 +726,7 @@ function EditarCitaModal({
     cod_ser: cita.cod_ser,
     id_vet: cita.id_vet,
     fech_cit: new Date(cita.fech_cit).toISOString().split("T")[0],
-    hora: cita.hora,
+    hora: cita.hora || "",
     estado: cita.estado,
     notas: cita.notas || "",
   })
@@ -696,17 +752,17 @@ function EditarCitaModal({
   }
 
   return (
-    <div className="modal" onClick={(e) => e.target.classList.contains("modal") && onClose()}>
-      <div className="modal-content">
-        <div className="modal-header">
+    <div className="vet-modal" onClick={(e) => e.target.classList.contains("vet-modal") && onClose()}>
+      <div className="vet-modal-content">
+        <div className="vet-modal-header">
           <h2>Editar Cita</h2>
-          <button className="close-btn" onClick={onClose}>
+          <button className="vet-close-btn" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
-        <div className="modal-body">
+        <div className="vet-modal-body">
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="estado">Estado:</label>
               <select id="estado" value={formData.estado} onChange={handleChange}>
                 <option value="PENDIENTE">Pendiente</option>
@@ -717,12 +773,12 @@ function EditarCitaModal({
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="fech_cit">Fecha:</label>
               <input type="date" id="fech_cit" value={formData.fech_cit} onChange={handleChange} required />
             </div>
 
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="hora">Hora:</label>
               <input
                 type="time"
@@ -735,17 +791,17 @@ function EditarCitaModal({
               />
             </div>
 
-            <div className="form-group">
+            <div className="vet-form-group">
               <label htmlFor="notas">Notas:</label>
               <textarea id="notas" rows={3} value={formData.notas} onChange={handleChange} />
             </div>
           </form>
         </div>
-        <div className="modal-footer">
-          <button className="cancel-modal-btn" onClick={onClose}>
+        <div className="vet-modal-footer">
+          <button className="vet-cancel-modal-btn" onClick={onClose}>
             Cancelar
           </button>
-          <button className="submit-btn" onClick={handleSubmit}>
+          <button className="vet-submit-btn" onClick={handleSubmit}>
             <RefreshCw size={16} /> Actualizar
           </button>
         </div>

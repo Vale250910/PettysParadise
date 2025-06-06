@@ -27,6 +27,10 @@ const rolesRoutes = require("./routes/roles");
 const serviciosRoutes = require("./routes/servicios");
 const verMasRoutes = require("./routes/vermas");
 const uploadRoutes = require('./routes/upload');
+const historialesRoutes = require("./routes/historiales");
+
+// Agregar esta línea con las otras rutas
+app.use("/api/historiales", historialesRoutes);
 
 
 // Usar rutas con prefijos

@@ -22,6 +22,9 @@ import CookieBanner from "../pages/Cookies.jsx"
 import GestionUsuarios from "../pages/admin/GestionUsuarios"
 import GestionRoles from "../pages/admin/GestionRoles"
 import GestionServicios from "../pages/admin/GestionServicios"
+import GestionCitas from "../pages/vet/GestionCitas.jsx"
+import MisPacientes from "../pages/vet/GestionMascotas.jsx"
+import HistorialesMedicos from "../pages/vet/HistorialesMedicos.jsx"
 
 const Home = lazy(() => import("../componentes/Home"))
 
@@ -85,11 +88,12 @@ const AppRoutes = () => {
 
         {/* RUTAS PRIVADAS PARA VETERINARIOS */}
         <Route element={<PrivateRouteVeterinario />}>
-          <Route path="/veterinario" element={<VeterinarioDashboard />} />
-          <Route path="/veterinario/citas" element={<Citas />} />
-          <Route path="/veterinario/pacientes" element={<Mascotas />} />
-          <Route path="/veterinario/historiales" element={<InfoMas />} />
-          <Route path="/veterinario/configuracion" element={<InfoMas />} />
+          <Route path="/veterinario" element={<VeterinarioDashboard />}>
+            <Route index element={<div />} /> {/* Ruta por defecto para mostrar el dashboard */}
+            <Route path="citas" element={<GestionCitas />} />
+            <Route path="pacientes" element={<MisPacientes/>} />
+            <Route path="historiales" element={<HistorialesMedicos />} />
+          </Route>
         </Route>
 
         {/* Redirección para rutas no encontradas */}
