@@ -1,242 +1,188 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  Plus,
-  Search,
-  Eye,
-  Edit,
-  Download,
-  FileText,
-  Calendar,
-  User,
-  Stethoscope,
-  X,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-} from "lucide-react"
-import jsPDF from "jspdf"
+import Swal from "sweetalert2"
+import { Plus, Search, Edit, Trash2, Stethoscope, User, Dog, Calendar, FileText, X, Download} from "lucide-react"
+import { apiService } from "../../services/api-service"
+import jsPDF from "jspdf";
 import "../../stylos/vet/HistorialesMedicos.css"
 import "../../stylos/vet/loadingvet.css"
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api"
-
+// =================================================================================
+// COMPONENTE PRINCIPAL
+// =================================================================================
 export default function HistorialesMedicos() {
-  const [showModal, setShowModal] = useState(false)
   const [historiales, setHistoriales] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const [selectedHistorial, setSelectedHistorial] = useState(null)
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [mascotas, setMascotas] = useState([])
-  const [notification, setNotification] = useState(null)
-
-  // Obtener datos del veterinario
-  const userData = JSON.parse(localStorage.getItem("user") || "{}")
-  const token = localStorage.getItem("token")
 
   useEffect(() => {
     fetchHistoriales()
-    fetchMascotas()
   }, [])
 
-  // Función para mostrar notificaciones
   const showNotification = (message, type = "success") => {
-    setNotification({ message, type })
-    setTimeout(() => setNotification(null), 5000)
+    const icon = type === "success" ? "success" : "error"
+    Swal.fire({ icon, title: message, timer: 3000, showConfirmButton: false, toast: true, position: "top-end" })
   }
 
-  // Función para realizar peticiones autenticadas
-  const authenticatedFetch = async (url, options = {}) => {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        ...options.headers,
-      },
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || "Error en la petición")
-    }
-
-    return response.json()
-  }
-
-  // Función para obtener historiales médicos
   const fetchHistoriales = async () => {
     setLoading(true)
+    setError(null)
     try {
-      // Obtener todos los historiales médicos
-      const response = await authenticatedFetch(`${API_BASE_URL}/historiales/obtener/completos`)
+      const response = await apiService.get("/api/historiales")
       setHistoriales(response || [])
     } catch (err) {
-      console.error("Error al cargar historiales:", err)
-      setError("Error al cargar los historiales médicos")
-      showNotification("Error al cargar los historiales médicos", "error")
+      setError("Error al cargar los historiales médicos.")
+      showNotification("Error al cargar historiales", "error")
     } finally {
       setLoading(false)
     }
   }
 
-  // Función para obtener mascotas
-  const fetchMascotas = async () => {
+  const handleSave = async (historialData) => {
     try {
-      const response = await authenticatedFetch(`${API_BASE_URL}/vermas/mascotas`)
-      setMascotas(response || [])
-    } catch (err) {
-      console.error("Error al cargar mascotas:", err)
-    }
-  }
-
-  // Función para crear nuevo historial
-  const crearHistorial = async (historialData) => {
-    try {
-      await authenticatedFetch(`${API_BASE_URL}/historiales`, {
-        method: "POST",
-        body: JSON.stringify(historialData),
-      })
-
-      await fetchHistoriales() // Recargar historiales
+      if (isEditing) {
+        await apiService.put(`/api/historiales/${historialData.cod_his}`, historialData)
+        showNotification("Historial actualizado exitosamente.")
+      } else {
+        await apiService.post("/api/historiales", historialData)
+        showNotification("Historial registrado exitosamente.")
+      }
       setShowModal(false)
-      showNotification("Historial médico creado exitosamente")
+      await fetchHistoriales()
     } catch (err) {
-      console.error("Error al crear historial:", err)
-      showNotification("Error al crear el historial médico", "error")
+      showNotification(`Error al guardar el historial: ${err.message}`, "error")
     }
   }
 
-  // Función para actualizar historial
-  const actualizarHistorial = async (historialData) => {
-    try {
-      await authenticatedFetch(`${API_BASE_URL}/historiales/${historialData.cod_his}`, {
-        method: "PUT",
-        body: JSON.stringify(historialData),
-      })
+  const handleDelete = async (historialId, mascotaNombre) => {
+    const result = await Swal.fire({
+      title: `¿Estás seguro de eliminar el registro de ${mascotaNombre}?`,
+      text: "No podrás revertir esta acción.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    })
 
-      await fetchHistoriales() // Recargar historiales
-      setShowEditModal(false)
-      showNotification("Historial médico actualizado exitosamente")
-    } catch (err) {
-      console.error("Error al actualizar historial:", err)
-      showNotification("Error al actualizar el historial médico", "error")
+    if (result.isConfirmed) {
+      try {
+        await apiService.delete(`/api/historiales/${historialId}`)
+        showNotification("Historial eliminado correctamente.")
+        await fetchHistoriales()
+      } catch (err) {
+        showNotification(`Error al eliminar: ${err.message}`, "error")
+      }
     }
   }
 
-  // Función para generar PDF mejorada
   const generarPDF = (historial) => {
     try {
-      const doc = new jsPDF()
+      const doc = new jsPDF();
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
 
       // Configurar fuente
-      doc.setFont("helvetica")
+      doc.setFont("helvetica");
 
       // Título
-      doc.setFontSize(20)
-      doc.setTextColor(44, 62, 80)
-      doc.text("HISTORIAL MÉDICO VETERINARIO", 20, 30)
+      doc.setFontSize(20);
+      doc.setTextColor(44, 62, 80);
+      doc.text("HISTORIAL MÉDICO VETERINARIO", 20, 30);
 
       // Línea separadora
-      doc.setDrawColor(5, 150, 105)
-      doc.setLineWidth(1)
-      doc.line(20, 35, 190, 35)
+      doc.setDrawColor(5, 150, 105);
+      doc.setLineWidth(1);
+      doc.line(20, 35, 190, 35);
 
       // Información de la clínica
-      doc.setFontSize(12)
-      doc.setTextColor(127, 140, 141)
-      doc.text("Petty's Paradise - Clínica Veterinaria", 20, 45)
-      doc.text(`Dr. ${userData.nombre} ${userData.apellido}`, 20, 52)
-      doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, 20, 59)
+      doc.setFontSize(12);
+      doc.setTextColor(127, 140, 141);
+      doc.text("Petty's Paradise - Clínica Veterinaria", 20, 45);
+      doc.text(`Dr. ${userData.nombre} ${userData.apellido}`, 20, 52);
+      doc.text(`Fecha de emisión: ${new Date().toLocaleDateString()}`, 20, 59);
 
       // Información del paciente
-      doc.setFontSize(14)
-      doc.setTextColor(44, 62, 80)
-      doc.text("INFORMACIÓN DEL PACIENTE", 20, 75)
+      doc.setFontSize(14);
+      doc.setTextColor(44, 62, 80);
+      doc.text("INFORMACIÓN DEL PACIENTE", 20, 75);
 
-      doc.setFontSize(11)
-      doc.setTextColor(52, 73, 94)
-      doc.text(`Nombre: ${historial.mascota || "N/A"}`, 20, 85)
-      doc.text(`Especie: ${historial.especie || "N/A"}`, 20, 92)
-      doc.text(`Raza: ${historial.raza || "N/A"}`, 20, 99)
-      doc.text(`Propietario: ${historial.propietario || "N/A"}`, 20, 106)
+      doc.setFontSize(11);
+      doc.setTextColor(52, 73, 94);
+      doc.text(`Nombre: ${historial.nombre_mascota || "N/A"}`, 20, 85);
+      doc.text(`Propietario: ${historial.nombre_propietario || "N/A"}`, 20, 92);
 
       // Información del historial
-      doc.setFontSize(14)
-      doc.setTextColor(44, 62, 80)
-      doc.text("REGISTRO MÉDICO", 20, 125)
+      doc.setFontSize(14);
+      doc.setTextColor(44, 62, 80);
+      doc.text("REGISTRO MÉDICO", 20, 110);
 
-      doc.setFontSize(11)
-      doc.setTextColor(52, 73, 94)
-      doc.text(`Fecha de consulta: ${new Date(historial.fech_his).toLocaleDateString()}`, 20, 135)
+      doc.setFontSize(11);
+      doc.setTextColor(52, 73, 94);
+      doc.text(`Fecha de consulta: ${new Date(historial.fecha).toLocaleDateString()}`, 20, 120);
 
       // Descripción
-      doc.text("Descripción/Diagnóstico:", 20, 150)
-      const descripcionLines = doc.splitTextToSize(historial.descrip_his || "", 170)
-      doc.text(descripcionLines, 20, 160)
+      doc.text("Descripción/Diagnóstico:", 20, 135);
+      const descripcionLines = doc.splitTextToSize(historial.descripcion || "", 170);
+      doc.text(descripcionLines, 20, 145);
 
       // Tratamiento
-      const yTratamiento = 160 + descripcionLines.length * 7 + 10
-      doc.text("Tratamiento:", 20, yTratamiento)
-      const tratamientoLines = doc.splitTextToSize(historial.tratamiento || "", 170)
-      doc.text(tratamientoLines, 20, yTratamiento + 10)
+      const yTratamiento = 145 + descripcionLines.length * 7 + 10;
+      doc.text("Tratamiento:", 20, yTratamiento);
+      const tratamientoLines = doc.splitTextToSize(historial.tratamiento || "", 170);
+      doc.text(tratamientoLines, 20, yTratamiento + 10);
 
       // Firma
-      const yFirma = yTratamiento + tratamientoLines.length * 7 + 30
-      doc.setDrawColor(127, 140, 141)
-      doc.line(120, yFirma, 190, yFirma)
-      doc.text(`Dr. ${userData.nombre} ${userData.apellido}`, 120, yFirma + 10)
-      doc.text("Médico Veterinario", 120, yFirma + 17)
+      const yFirma = yTratamiento + tratamientoLines.length * 7 + 30;
+      doc.setDrawColor(127, 140, 141);
+      doc.line(120, yFirma, 190, yFirma);
+      doc.text(`Dr. ${userData.nombre} ${userData.apellido}`, 120, yFirma + 10);
+      doc.text("Médico Veterinario", 120, yFirma + 17);
 
       // Guardar PDF
-      doc.save(`Historial_${historial.mascota || "Paciente"}_${historial.fech_his}.pdf`)
-      showNotification("PDF generado exitosamente")
+      doc.save(`Historial_${historial.nombre_mascota || "Paciente"}_${historial.fecha}.pdf`);
+      showNotification("PDF generado exitosamente");
     } catch (error) {
-      console.error("Error al generar PDF:", error)
-      showNotification("Error al generar el PDF", "error")
+      console.error("Error al generar PDF:", error);
+      showNotification("Error al generar el PDF", "error");
     }
+  };
+
+  const openModal = (historial = null) => {
+    setSelectedHistorial(historial)
+    setIsEditing(!!historial)
+    setShowModal(true)
   }
 
-  // Filtrar historiales por búsqueda
+  const closeModal = () => {
+    setShowModal(false)
+    setSelectedHistorial(null)
+    setIsEditing(false)
+  }
+
   const historialesFiltrados = historiales.filter(
-    (historial) =>
-      historial.mascota?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      historial.propietario?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      historial.descrip_his?.toLowerCase().includes(searchTerm.toLowerCase()),
+    (h) =>
+      h.nombre_mascota?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      h.nombre_propietario?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      h.descripcion?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   return (
-    <div className="vet-historiales-container">
-      {/* Notificaciones */}
-      {notification && (
-        <div className={`vet-notification ${notification.type}`}>
-          {notification.type === "success" ? <CheckCircle size={20} /> : <XCircle size={20} />}
-          <span>{notification.message}</span>
-          <button onClick={() => setNotification(null)}>
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="vet-historiales-header">
-        <div className="vet-historiales-title">
-          <h2>Historiales Médicos</h2>
-          <p>Gestiona los registros médicos de tus pacientes</p>
-        </div>
-        <button className="vet-add-historial-btn" onClick={() => setShowModal(true)}>
+    <div className="historiales-medicos-container">
+      <div className="historiales-medicos-header">
+        <h1>Historiales Médicos</h1>
+        <button onClick={() => openModal()} className="historiales-medicos-add-btn">
           <Plus size={20} /> Nuevo Historial
         </button>
       </div>
-
-      {/* Barra de búsqueda */}
-      <div className="vet-search-container">
-        <div className="vet-search-box">
-          <Search size={20} className="vet-search-icon" />
+      <div className="historiales-medicos-search-container">
+        <div className="historiales-medicos-search-box">
+          <Search size={20} className="historiales-medicos-search-icon" />
           <input
             type="text"
             placeholder="Buscar por mascota, propietario o descripción..."
@@ -246,385 +192,241 @@ export default function HistorialesMedicos() {
         </div>
       </div>
 
-      {/* Lista de historiales */}
-      <div className="vet-historiales-list">
+      <div className="historiales-medicos-list">
         {loading ? (
-          <div className="vet-loading-message">
-            <div className="vet-loading-spinner"></div>
-            Cargando historiales...
+          <div className="historiales-medicos-loading-message">
+            <div className="historiales-medicos-loading-spinner"></div>Cargando historiales...
           </div>
         ) : error ? (
-          <div className="vet-error-message">
-            <AlertCircle size={20} />
-            {error}
-          </div>
+          <p className="historiales-medicos-error-message">{error}</p>
         ) : historialesFiltrados.length === 0 ? (
-          <div className="vet-empty-message">
-            <FileText size={48} />
-            <h3>No hay historiales</h3>
-            <p>
-              {searchTerm
-                ? "No se encontraron historiales que coincidan con la búsqueda"
-                : "No hay historiales médicos registrados"}
-            </p>
-          </div>
+          <div className="historiales-medicos-empty-message">No hay historiales que coincidan con la búsqueda.</div>
         ) : (
           historialesFiltrados.map((historial) => (
             <HistorialCard
               key={historial.cod_his}
               historial={historial}
-              onView={() => {
-                setSelectedHistorial(historial)
-                setShowViewModal(true)
-              }}
-              onEdit={() => {
-                setSelectedHistorial(historial)
-                setShowEditModal(true)
-              }}
+              onEdit={() => openModal(historial)}
+              onDelete={() => handleDelete(historial.cod_his, historial.nombre_mascota)}
               onDownload={() => generarPDF(historial)}
             />
           ))
         )}
       </div>
 
-      {/* Modales */}
       {showModal && (
-        <NuevoHistorialModal onClose={() => setShowModal(false)} onSubmit={crearHistorial} mascotas={mascotas} />
-      )}
-
-      {showViewModal && selectedHistorial && (
-        <VerHistorialModal
+        <HistorialModal
+          onClose={closeModal}
+          onSubmit={handleSave}
+          isEditing={isEditing}
           historial={selectedHistorial}
-          onClose={() => setShowViewModal(false)}
-          onDownload={() => generarPDF(selectedHistorial)}
-        />
-      )}
-
-      {showEditModal && selectedHistorial && (
-        <EditarHistorialModal
-          historial={selectedHistorial}
-          onClose={() => setShowEditModal(false)}
-          onSubmit={actualizarHistorial}
-          mascotas={mascotas}
         />
       )}
     </div>
   )
 }
 
-// Resto de los componentes con clases CSS actualizadas...
-// [HistorialCard, NuevoHistorialModal, VerHistorialModal, EditarHistorialModal]
+// =================================================================================
+// SUB-COMPONENTES
+// =================================================================================
 
-// Componente HistorialCard
-function HistorialCard({ historial, onView, onEdit, onDownload }) {
-  const fecha = new Date(historial.fech_his)
-  const fechaFormateada = fecha.toLocaleDateString()
 
+function HistorialCard({ historial, onEdit, onDelete, onDownload }) {
   return (
-    <div className="vet-historial-card">
-      <div className="vet-historial-date">
-        <Calendar size={20} />
-        <span>{fechaFormateada}</span>
+    <div className="historiales-medicos-card">
+      <div className="historiales-medicos-card-header">
+        <Stethoscope />
+        <div>
+          <h4>{historial.nombre_mascota}</h4>
+          <p>{historial.nombre_propietario}</p>
+        </div>
+        <span>{new Date(historial.fecha).toLocaleDateString("es-CO")}</span>
       </div>
-
-      <div className="vet-historial-info">
-        <div className="vet-historial-header">
-          <h3>{historial.mascota}</h3>
-          <span className="vet-historial-id">#{historial.cod_his}</span>
-        </div>
-
-        <div className="vet-historial-meta">
-          <span className="vet-meta-item">
-            <User size={14} />
-            {historial.propietario}
-          </span>
-          <span className="vet-meta-item">
-            <Stethoscope size={14} />
-            {historial.especie} • {historial.raza}
-          </span>
-        </div>
-
-        <div className="vet-historial-description">
-          <p>{historial.descrip_his}</p>
-        </div>
+      <div className="historiales-medicos-card-body">
+        <p>
+          <strong>Descripción:</strong> {historial.descripcion}
+        </p>
+        <p>
+          <strong>Tratamiento:</strong> {historial.tratamiento}
+        </p>
       </div>
-
-      <div className="vet-historial-actions">
-        <button className="vet-action-btn vet-view-btn" onClick={onView} title="Ver detalles">
-          <Eye size={16} />
+      <div className="historiales-medicos-card-actions">
+        <button onClick={onEdit} className="historiales-medicos-action-btn edit">
+          <Edit size={16} /> Editar
         </button>
-        <button className="vet-action-btn vet-edit-btn" onClick={onEdit} title="Editar">
-          <Edit size={16} />
-        </button>
-        <button className="vet-action-btn vet-download-btn" onClick={onDownload} title="Descargar PDF">
-          <Download size={16} />
+        <button onClick={onDownload} className="vet-action-btn download"><Download size={16} /> Descargar</button>
+        <button onClick={onDelete} className="historiales-medicos-action-btn delete">
+          <Trash2 size={16} /> Eliminar
         </button>
       </div>
     </div>
   )
 }
 
-// Modal Nuevo Historial
-function NuevoHistorialModal({ onClose, onSubmit, mascotas }) {
+function HistorialModal({ onClose, onSubmit, isEditing, historial }) {
   const [formData, setFormData] = useState({
-    cod_mas: "",
-    fech_his: new Date().toISOString().split("T")[0],
-    descrip_his: "",
-    tratamiento: "",
+    cod_mas: historial?.cod_mas || "",
+    fecha: historial ? new Date(historial.fecha).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+    descripcion: historial?.descripcion || "",
+    tratamiento: historial?.tratamiento || "",
+    cod_his: historial?.cod_his || null,
   })
 
+  const [propietarios, setPropietarios] = useState([])
+  const [mascotas, setMascotas] = useState([])
+  const [selectedPropietario, setSelectedPropietario] = useState("")
+  const [loadingMascotas, setLoadingMascotas] = useState(false)
+
+  useEffect(() => {
+    const fetchPropietarios = async () => {
+      try {
+        const response = await apiService.get("/api/roles/propietarios")
+        if (response.success) setPropietarios(response.propietarios || [])
+      } catch (error) {
+        console.error("Error fetching propietarios", error)
+      }
+    }
+    fetchPropietarios()
+  }, [])
+
+  useEffect(() => {
+    if (!selectedPropietario) {
+      setMascotas([])
+      return
+    }
+    const fetchMascotas = async () => {
+      setLoadingMascotas(true)
+      try {
+        const response = await apiService.get(`/api/mascota/propietario/${selectedPropietario}`)
+        if (response.success) setMascotas(response.mascotas || [])
+      } catch (error) {
+        console.error("Error fetching mascotas", error)
+        setMascotas([])
+      } finally {
+        setLoadingMascotas(false)
+      }
+    }
+    fetchMascotas()
+  }, [selectedPropietario])
+
   const handleChange = (e) => {
-    const { id, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }))
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handlePropietarioChange = (e) => {
+    setSelectedPropietario(e.target.value)
+    setFormData((prev) => ({ ...prev, cod_mas: "" })) // Resetear mascota al cambiar de dueño
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!formData.cod_mas && !isEditing) {
+      Swal.fire({
+        icon: "error",
+        title: "Error de validación",
+        text: "Debes seleccionar un propietario y una mascota.",
+      })
+      return
+    }
     onSubmit(formData)
   }
 
   return (
-    <div className="vet-modal-overlay" onClick={(e) => e.target.classList.contains("vet-modal-overlay") && onClose()}>
-      <div className="vet-modal-simple vet-modal-large">
-        <div className="vet-modal-header">
-          <h2>Nuevo Historial Médico</h2>
-          <button className="vet-modal-close-btn" onClick={onClose}>
-            <X size={18} />
+    <div className="historiales-medicos-modal-overlay" onClick={onClose}>
+      <div className="historiales-medicos-modal-container" onClick={(e) => e.stopPropagation()}>
+        <div className="historiales-medicos-modal-header">
+          <h2>{isEditing ? "Editar" : "Nuevo"} Historial Médico</h2>
+          <button onClick={onClose} className="historiales-medicos-modal-close-btn">
+            <X size={20} />
           </button>
         </div>
-        <div className="vet-modal-body">
-          <form onSubmit={handleSubmit}>
-            <div className="vet-form-row">
-              <div className="vet-form-group">
-                <label htmlFor="cod_mas">Paciente:</label>
-                <select
-                  id="cod_mas"
-                  className="vet-form-input"
-                  value={formData.cod_mas}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Seleccionar paciente</option>
-                  {mascotas.map((mascota) => (
-                    <option key={mascota.cod_mas} value={mascota.cod_mas}>
-                      {mascota.nom_mas} - {mascota.propietario} ({mascota.especie})
+        <form onSubmit={handleSubmit} className="historiales-medicos-modal-body">
+          {!isEditing && (
+            <>
+              <div className="historiales-medicos-form-group">
+                <label>
+                  <User size={16} /> Propietario
+                </label>
+                <select value={selectedPropietario} onChange={handlePropietarioChange} required={!isEditing}>
+                  <option value="">-- Seleccionar Propietario --</option>
+                  {propietarios.map((p) => (
+                    <option key={p.id_pro} value={p.id_pro}>
+                      {p.nombre} {p.apellido}
                     </option>
                   ))}
                 </select>
               </div>
-              <div className="vet-form-group">
-                <label htmlFor="fech_his">Fecha:</label>
-                <input
-                  type="date"
-                  id="fech_his"
-                  className="vet-form-input"
-                  value={formData.fech_his}
+              <div className="historiales-medicos-form-group">
+                <label>
+                  <Dog size={16} /> Mascota
+                </label>
+                <select
+                  name="cod_mas"
+                  value={formData.cod_mas}
                   onChange={handleChange}
-                  required
-                />
+                  required={!isEditing}
+                  disabled={!selectedPropietario || loadingMascotas}
+                >
+                  <option value="">{loadingMascotas ? "Cargando..." : "-- Seleccionar Mascota --"}</option>
+                  {mascotas.map((m) => (
+                    <option key={m.cod_mas} value={m.cod_mas}>
+                      {m.nom_mas}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
-
-            <div className="vet-form-group">
-              <label htmlFor="descrip_his">Descripción/Diagnóstico:</label>
-              <textarea
-                id="descrip_his"
-                className="vet-form-input"
-                rows={4}
-                value={formData.descrip_his}
-                onChange={handleChange}
-                placeholder="Describe los síntomas, diagnóstico y observaciones..."
-                required
+            </>
+          )}
+          {isEditing && (
+            <div className="historiales-medicos-form-group">
+              <label>Paciente</label>
+              <input
+                type="text"
+                value={`${historial.nombre_mascota} (Propietario: ${historial.nombre_propietario})`}
+                disabled
               />
             </div>
-
-            <div className="vet-form-group">
-              <label htmlFor="tratamiento">Tratamiento:</label>
-              <textarea
-                id="tratamiento"
-                className="vet-form-input"
-                rows={4}
-                value={formData.tratamiento}
-                onChange={handleChange}
-                placeholder="Describe el tratamiento aplicado, medicamentos, recomendaciones..."
-                required
-              />
-            </div>
-          </form>
-        </div>
-        <div className="vet-modal-footer">
-          <button className="vet-cancel-button" onClick={onClose}>
-            Cancelar
-          </button>
-          <button className="vet-submit-button" onClick={handleSubmit}>
-            <FileText size={16} /> Crear Historial
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Modal Ver Historial
-function VerHistorialModal({ historial, onClose, onDownload }) {
-  return (
-    <div className="vet-modal-overlay" onClick={(e) => e.target.classList.contains("vet-modal-overlay") && onClose()}>
-      <div className="vet-modal-simple">
-        <div className="vet-modal-header">
-          <h2>Historial Médico #{historial.cod_his}</h2>
-          <button className="vet-modal-close-btn" onClick={onClose}>
-            <X size={18} />
-          </button>
-        </div>
-        <div className="vet-modal-body">
-          <div className="vet-historial-details-view">
-            <div className="vet-detail-group">
-              <h3>Información del Paciente</h3>
-              <p>
-                <strong>Nombre:</strong> {historial.mascota}
-              </p>
-              <p>
-                <strong>Especie:</strong> {historial.especie}
-              </p>
-              <p>
-                <strong>Raza:</strong> {historial.raza}
-              </p>
-              <p>
-                <strong>Propietario:</strong> {historial.propietario}
-              </p>
-            </div>
-
-            <div className="vet-detail-group">
-              <h3>Información de la Consulta</h3>
-              <p>
-                <strong>Fecha:</strong> {new Date(historial.fech_his).toLocaleDateString()}
-              </p>
-            </div>
-
-            <div className="vet-detail-group">
-              <h3>Descripción/Diagnóstico</h3>
-              <p>{historial.descrip_his}</p>
-            </div>
-
-            <div className="vet-detail-group">
-              <h3>Tratamiento</h3>
-              <p>{historial.tratamiento}</p>
-            </div>
+          )}
+          <div className="historiales-medicos-form-group">
+            <label>
+              <Calendar size={16} /> Fecha
+            </label>
+            <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} required />
           </div>
-        </div>
-        <div className="vet-modal-footer">
-          <button className="vet-download-btn-modal" onClick={onDownload}>
-            <Download size={16} /> Descargar PDF
-          </button>
-          <button className="vet-submit-button" onClick={onClose}>
-            Cerrar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// Modal Editar Historial
-function EditarHistorialModal({ historial, onClose, onSubmit, mascotas }) {
-  const [formData, setFormData] = useState({
-    cod_his: historial.cod_his,
-    cod_mas: historial.cod_mas,
-    fech_his: new Date(historial.fech_his).toISOString().split("T")[0],
-    descrip_his: historial.descrip_his,
-    tratamiento: historial.tratamiento,
-  })
-
-  const handleChange = (e) => {
-    const { id, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }))
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
-
-  return (
-    <div className="vet-modal-overlay" onClick={(e) => e.target.classList.contains("vet-modal-overlay") && onClose()}>
-      <div className="vet-modal-simple vet-modal-large">
-        <div className="vet-modal-header">
-          <h2>Editar Historial Médico</h2>
-          <button className="vet-modal-close-btn" onClick={onClose}>
-            <X size={18} />
-          </button>
-        </div>
-        <div className="vet-modal-body">
-          <form onSubmit={handleSubmit}>
-            <div className="vet-form-row">
-              <div className="vet-form-group">
-                <label htmlFor="cod_mas">Paciente:</label>
-                <select
-                  id="cod_mas"
-                  className="vet-form-input"
-                  value={formData.cod_mas}
-                  onChange={handleChange}
-                  required
-                >
-                  {mascotas.map((mascota) => (
-                    <option key={mascota.cod_mas} value={mascota.cod_mas}>
-                      {mascota.nom_mas} - {mascota.propietario} ({mascota.especie})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="vet-form-group">
-                <label htmlFor="fech_his">Fecha:</label>
-                <input
-                  type="date"
-                  id="fech_his"
-                  className="vet-form-input"
-                  value={formData.fech_his}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="vet-form-group">
-              <label htmlFor="descrip_his">Descripción/Diagnóstico:</label>
-              <textarea
-                id="descrip_his"
-                className="vet-form-input"
-                rows={4}
-                value={formData.descrip_his}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="vet-form-group">
-              <label htmlFor="tratamiento">Tratamiento:</label>
-              <textarea
-                id="tratamiento"
-                className="vet-form-input"
-                rows={4}
-                value={formData.tratamiento}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </form>
-        </div>
-        <div className="vet-modal-footer">
-          <button className="vet-cancel-button" onClick={onClose}>
-            Cancelar
-          </button>
-          <button className="vet-submit-button" onClick={handleSubmit}>
-            <Edit size={16} /> Actualizar Historial
-          </button>
-        </div>
+          <div className="historiales-medicos-form-group">
+            <label>
+              <FileText size={16} /> Descripción
+            </label>
+            <textarea
+              name="descripcion"
+              value={formData.descripcion}
+              onChange={handleChange}
+              required
+              rows="4"
+            ></textarea>
+          </div>
+          <div className="historiales-medicos-form-group">
+            <label>
+              <Stethoscope size={16} /> Tratamiento
+            </label>
+            <textarea
+              name="tratamiento"
+              value={formData.tratamiento}
+              onChange={handleChange}
+              required
+              rows="4"
+            ></textarea>
+          </div>
+          <div className="historiales-medicos-modal-footer">
+            <button type="button" className="historiales-medicos-cancel-button" onClick={onClose}>
+              Cancelar
+            </button>
+            <button type="submit" className="historiales-medicos-submit-button">
+              {isEditing ? "Actualizar" : "Guardar"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )

@@ -16,18 +16,20 @@ import {
   MdLocalHospital as IconMedical,
 } from "react-icons/md"
 import "../stylos/Vet.css"
+import { apiService } from "../services/api-service";
 
 const VeterinarioDashboard = () => {
   const location = useLocation()
-  const [userData, setUserData] = useState({
+  // UNIFICADO: Un solo estado para todos los datos del dashboard
+  const [dashboardData, setDashboardData] = useState({
     nombre: "",
     apellido: "",
     email: "",
     especialidad: "",
-    citasHoy: 0,
-    pacientesActivos: 0,
-    historialesPendientes: 0,
-  })
+    citasProgramadas: 0,
+    pacientes: 0,
+    historialesMedicos: 0,
+  });
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -42,33 +44,38 @@ const VeterinarioDashboard = () => {
     setSidebarOpen(false)
   }, [location.pathname])
 
+  // useEffect para cargar los datos del dashboard
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
       try {
-        setLoading(true)
+        // Obtenemos los datos del usuario desde localStorage
+        const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        
+        // Llamamos a la nueva ruta de estadísticas
+        const response = await apiService.get("/api/citas/veterinario/stats");
 
-        // Cargar datos del usuario desde localStorage
-        const user = JSON.parse(localStorage.getItem("user") || "{}")
-        if (user) {
-          setUserData((prevState) => ({
-            ...prevState,
-            nombre: user.nombre || "",
-            apellido: user.apellido || "",
-            email: user.email || "",
-            especialidad: user.especialidad || "Medicina General",
-          }))
+        if (response.success) {
+          setDashboardData({
+            nombre: storedUser.nombre,
+            apellido: storedUser.apellido,
+            ...response.stats,
+          });
+        } else {
+          throw new Error("No se pudieron cargar las estadísticas.");
         }
-
-        setLoading(false)
-      } catch (error) {
-        console.error("Error al cargar datos del dashboard veterinario:", error)
-        setError("Error al cargar los datos del veterinario")
-        setLoading(false)
+      } catch (err) {
+        setError(err.message || "Error al cargar los datos del dashboard.");
+      } finally {
+        setLoading(false);
       }
-    }
+    };
 
-    loadDashboardData()
-  }, [isMainDashboard])
+    // Solo cargamos los datos si estamos en la vista principal del dashboard
+    if (isMainDashboard) {
+      fetchDashboardData();
+    }
+  }, [isMainDashboard]);
 
   const handleLogout = () => {
     if (window.confirm("¿Estás seguro de que deseas cerrar sesión?")) {
@@ -114,18 +121,18 @@ const VeterinarioDashboard = () => {
 
         <div className="vet-user-info">
           <div className="vet-avatar">
-            {userData.nombre.charAt(0).toUpperCase()}
-            {userData.apellido.charAt(0).toUpperCase()}
+            { dashboardData.nombre.charAt(0).toUpperCase()}
+            { dashboardData.apellido.charAt(0).toUpperCase()}
           </div>
           <div className="vet-user-details">
             <h3 className="user-name">
-              Dr. {userData.nombre} {userData.apellido}
+              Dr. { dashboardData.nombre} { dashboardData.apellido}
             </h3>
             <p className="vet-user-email">
-              <IconMail size={16} /> {userData.email}
+              <IconMail size={16} /> { dashboardData.email}
             </p>
             <span className="vet-user-role">VETERINARIO</span>
-            {userData.especialidad && <p className="vet-user-specialty">{userData.especialidad}</p>}
+            { dashboardData.especialidad && <p className="vet-user-specialty">{ dashboardData.especialidad}</p>}
           </div>
         </div>
 
@@ -176,49 +183,35 @@ const VeterinarioDashboard = () => {
           {isMainDashboard ? (
             <div className="dashboard-summary">
               <div className="welcome-section">
-                <h2>Bienvenido, Dr. {userData.nombre}</h2>
+                <h2>Bienvenido, Dr. { dashboardData.nombre}</h2>
                 <p className="welcome-message">
                   Panel de control veterinario de Petty's Paradise. Gestiona tus citas, pacientes e historiales médicos.
                 </p>
               </div>
 
               <div className="vet-stats-grid">
-                <div className="vet-stat-card appointments">
-                  <div className="vet-stat-icon">
-                    <IconCalendar size={32} />
-                  </div>
+                <div className="vet-stat-card">
+                  <IconCalendar className="vet-stat-icon primary" />
                   <div className="vet-stat-content">
-                    <h3>Citas de Hoy</h3>
-                    <p className="vet-stat-value">{userData.citasHoy}</p>
-                    <Link to="/veterinario/citas" className="card-link">
-                      Ver agenda <IconArrowRight />
-                    </Link>
+                    <h3>Citas programadas</h3>
+                    <p className="vet-stat-value">{dashboardData.citasProgramadas}</p>
+                    <Link to="/veterinario/citas" className="card-link">Ver calendario <IconArrowRight /></Link>
                   </div>
                 </div>
-
-                <div className="vet-stat-card patients">
-                  <div className="vet-stat-icon">
-                    <IconPets size={32} />
-                  </div>
+                <div className="vet-stat-card">
+                  <IconPets className="vet-stat-icon secondary" />
                   <div className="vet-stat-content">
-                    <h3>Pacientes Activos</h3>
-                    <p className="vet-stat-value">{userData.pacientesActivos}</p>
-                    <Link to="/veterinario/pacientes" className="card-link">
-                      Ver pacientes <IconArrowRight />
-                    </Link>
+                    <h3>Pacientes</h3>
+                    <p className="vet-stat-value">{dashboardData.pacientes}</p>
+                    <Link to="/veterinario/pacientes" className="card-link">Gestionar pacientes <IconArrowRight /></Link>
                   </div>
                 </div>
-
-                <div className="vet-stat-card records">
-                  <div className="vet-stat-icon">
-                    <IconMedical size={32} />
-                  </div>
+                <div className="vet-stat-card">
+                  <IconMedical className="vet-stat-icon tertiary" />
                   <div className="vet-stat-content">
-                    <h3>Historiales Pendientes</h3>
-                    <p className="vet-stat-value">{userData.historialesPendientes}</p>
-                    <Link to="/veterinario/historiales" className="card-link">
-                      Revisar historiales <IconArrowRight />
-                    </Link>
+                    <h3>Historiales médicos</h3>
+                    <p className="vet-stat-value">{dashboardData.historialesMedicos}</p>
+                    <Link to="/veterinario/historiales" className="card-link">Revisar historiales <IconArrowRight /></Link>
                   </div>
                 </div>
               </div>

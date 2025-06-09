@@ -2,26 +2,35 @@ USE mascotas_db;
 DELIMITER $$
 
 -- Crear historial médico
-CREATE PROCEDURE CrearHistorialMedico(
-    IN p_fech_his DATE,
-    IN p_descrip_his TEXT,
-    IN p_tratamiento TEXT,
+DROP PROCEDURE IF EXISTS CrearHistorial$$
+CREATE PROCEDURE CrearHistorial(
     IN p_cod_mas INT,
-    OUT p_cod_his INT
+    IN p_fecha DATE,
+    IN p_descripcion TEXT,
+    IN p_tratamiento TEXT
 )
 BEGIN
-    INSERT INTO historiales_medicos (fech_his, descrip_his, tratamiento,cod_mas)
-    VALUES (p_fech_his, p_descrip_his, p_tratamiento, p_cod_mas);
-    
-    SET p_cod_his = LAST_INSERT_ID();
+    INSERT INTO historiales_medicos (cod_mas, fech_his, descrip_his, tratamiento)
+    VALUES (p_cod_mas, p_fecha, p_descripcion, p_tratamiento);
 END$$
 
 -- Obtener todos los historiales médicos
-CREATE PROCEDURE ObtenerHistorialesMedicos()
+DROP PROCEDURE IF EXISTS ObtenerTodosLosHistoriales$$
+CREATE PROCEDURE ObtenerTodosLosHistoriales()
 BEGIN
-    SELECT h.*, m.nom_mas AS nombre_mascota, m.especie, m.raza
+    SELECT 
+        h.cod_his,
+        h.fech_his AS fecha,
+        h.descrip_his AS descripcion,
+        h.tratamiento,
+        h.cod_mas,
+        m.nom_mas AS nombre_mascota,
+        CONCAT(u.nombre, ' ', u.apellido) AS nombre_propietario
     FROM historiales_medicos h
-    JOIN mascotas m ON h.cod_mas = m.cod_mas;
+    JOIN mascotas m ON h.cod_mas = m.cod_mas
+    JOIN propietarios p ON m.id_pro = p.id_pro
+    JOIN usuarios u ON p.id_pro = u.id_usuario
+    ORDER BY h.fech_his DESC;
 END$$
 
 -- Obtener historiales médicos por mascota
@@ -46,29 +55,29 @@ BEGIN
 END$$
 
 -- Actualizar historial médico
-CREATE PROCEDURE ActualizarHistorialMedico(
-    IN p_cod_his INT,
-    IN p_fech_his DATE,
-    IN p_descrip_his TEXT,
-    IN p_tratamiento TEXT,
-    IN p_cod_mas INT
+DROP PROCEDURE IF EXISTS ActualizarHistorial$$
+CREATE PROCEDURE ActualizarHistorial(
+    IN p_cod_his INT, -- Corregido de id_his a cod_his
+    IN p_fecha DATE,
+    IN p_descripcion TEXT,
+    IN p_tratamiento TEXT
 )
 BEGIN
-    UPDATE historiales_medicos SET
-        fech_his = p_fech_his,
-        descrip_his = p_descrip_his,
+    UPDATE historiales_medicos
+    SET
+        fech_his = p_fecha,
+        descrip_his = p_descripcion,
         tratamiento = p_tratamiento
-    WHERE cod_his = p_cod_his AND cod_mas = p_cod_mas;
+    WHERE cod_his = p_cod_his;
 END$$
 
--- Eliminar historial médico
-CREATE PROCEDURE EliminarHistorialMedico(
-    IN p_cod_his INT,
-    IN p_cod_mas INT
+-- Eliminar un historial (NUEVO)
+DROP PROCEDURE IF EXISTS EliminarHistorial$$
+CREATE PROCEDURE EliminarHistorial(
+    IN p_cod_his INT -- Corregido de id_his a cod_his
 )
 BEGIN
-    DELETE FROM historiales_medicos 
-    WHERE cod_his = p_cod_his AND cod_mas = p_cod_mas;
+    DELETE FROM historiales_medicos WHERE cod_his = p_cod_his;
 END$$
 
 DELIMITER ;

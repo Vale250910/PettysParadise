@@ -561,6 +561,29 @@
   gap: 1.5rem;
 }
 
+/* Estilos para CitaCard cancelada */
+.vet-cita-card.canceled {
+  opacity: 0.6;
+  background-color: #f1f2f6; /* Un gris muy claro */
+  border-left: 5px solid #e74c3c; /* Borde rojo */
+}
+
+.vet-cita-card.canceled .vet-cita-date {
+  background: #e74c3c;
+}
+
+.vet-cita-card.canceled h3 {
+  text-decoration: line-through;
+  color: #95a5a6;
+}
+
+/* Badge para estado cancelado */
+.vet-status-badge.canceled {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #c0392b;
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
 .vet-detail-group {
   padding: 1rem;
   background: #f8fafc;

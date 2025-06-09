@@ -64,7 +64,24 @@ BEGIN
     WHERE m.cod_mas  = p_cod_mas ;
 END$$
 
--- Actualizar mascota
+DELIMITER ;
+
+DELIMITER $$
+
+-- Procedimiento para Obtener TODAS las mascotas (para el veterinario)
+DROP PROCEDURE IF EXISTS ObtenerTodasMascotas$$
+CREATE PROCEDURE ObtenerTodasMascotas()
+BEGIN
+    SELECT m.*, CONCAT(u.nombre, ' ', u.apellido) AS propietario
+    FROM mascotas m
+    JOIN propietarios p ON m.id_pro = p.id_pro
+    JOIN usuarios u ON p.id_pro = u.id_usuario
+    ORDER BY m.cod_mas DESC;
+END$$
+
+
+-- Procedimiento para Actualizar Mascota (NUEVO Y CORREGIDO)
+DROP PROCEDURE IF EXISTS ActualizarMascota$$
 CREATE PROCEDURE ActualizarMascota(
     IN p_cod_mas  INT,
     IN p_nom_mas VARCHAR(100),
@@ -82,19 +99,28 @@ BEGIN
         especie = p_especie,
         raza = p_raza,
         edad = p_edad,
-        genero =p_genero,
+        genero = p_genero,
         peso = p_peso,
+        id_pro = p_id_pro,
         foto = p_foto
-    WHERE cod_mas  = p_cod_mas ;
+    WHERE cod_mas = p_cod_mas;
 END$$
 
--- Eliminar mascota
+
+-- Procedimiento para Eliminar Mascota (NUEVO)
+DROP PROCEDURE IF EXISTS EliminarMascota$$
 CREATE PROCEDURE EliminarMascota(
     IN p_cod_mas INT
 )
 BEGIN
+    -- Primero, eliminar registros dependientes para evitar errores de llave foránea
+    DELETE FROM historiales_medicos WHERE cod_mas = p_cod_mas;
+    DELETE FROM citas WHERE cod_mas = p_cod_mas;
+    
+    -- Finalmente, eliminar la mascota
     DELETE FROM mascotas WHERE cod_mas = p_cod_mas;
 END$$
 
 DELIMITER ;
+
 

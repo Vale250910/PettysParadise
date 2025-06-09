@@ -270,4 +270,4 @@ INSERT INTO administradores (
     104, 'Coordinadora de Operaciones', '2025-05-26'
 );
 
-select * from usuarios;
+

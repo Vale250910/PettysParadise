@@ -103,6 +103,24 @@ router.get("/verificar-veterinario", authenticateToken, async (req, res) => {
   }
 });
 
+// OBTENER TODOS LOS PROPIETARIOS (NUEVO)
+router.get("/propietarios", authenticateToken, async (req, res) => {
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    // Usamos el procedimiento que ya existe
+    const [rows] = await connection.query("CALL ObtenerPropietarios()");
+    res.json({ success: true, propietarios: rows[0] });
+  } catch (error) {
+    console.error("Error al obtener propietarios:", error);
+    res.status(500).json({ success: false, message: "Error del servidor" });
+  } finally {
+    if (connection) connection.release();
+  }
+});
+
+module.exports = router;
+
 /**
  * Obtener estadísticas del dashboard
  */

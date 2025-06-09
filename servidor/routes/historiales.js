@@ -3,144 +3,53 @@ const router = express.Router();
 const pool = require("../db/conexion");
 const authenticateToken = require("../middlewares/authenticateToken");
 
-// Obtener todos los historiales médicos
+// OBTENER TODOS LOS HISTORIALES (Ruta principal para el veterinario)
 router.get("/", authenticateToken, async (req, res) => {
   let connection;
   try {
-    connection = await pool.getConnection();
-    
-    // Usar el procedimiento almacenado ObtenerHistorialesMedicos
-    const [rows] = await connection.query(`CALL ObtenerHistorialesMedicos()`);
-    
-    // Los procedimientos almacenados devuelven un array de arrays, tomamos el primer elemento
-    const historiales = rows[0] || [];
-    
-    // Agregar información del propietario manualmente ya que el procedimiento no la incluye
-    const historialesConPropietario = await Promise.all(
-      historiales.map(async (historial) => {
-        try {
-          const [propietarioRows] = await connection.query(`
-            SELECT CONCAT(u.nombre, ' ', u.apellido) AS propietario
-            FROM mascotas m
-            JOIN propietarios p ON m.id_pro = p.id_pro
-            JOIN usuarios u ON p.id_pro = u.id_usuario
-            WHERE m.cod_mas = ?
-          `, [historial.cod_mas]);
-          
-          return {
-            ...historial,
-            propietario: propietarioRows[0]?.propietario || 'No disponible'
-          };
-        } catch (error) {
-          console.error("Error al obtener propietario:", error);
-          return {
-            ...historial,
-            propietario: 'No disponible'
-          };
-        }
-      })
-    );
-    
-    res.json(historialesConPropietario);
+      connection = await pool.getConnection();
+      const [rows] = await connection.query("CALL ObtenerTodosLosHistoriales()");
+      res.json(rows[0] || []);
   } catch (error) {
-    console.error("Error al obtener historiales:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error al obtener historiales", 
-      error: error.message 
-    });
+      console.error("Error al obtener historiales:", error);
+      res.status(500).json({ success: false, message: "Error del servidor" });
   } finally {
-    if (connection) connection.release();
+      if (connection) connection.release();
   }
 });
 
-// Crear nuevo historial médico
+// CREAR NUEVO HISTORIAL
 router.post("/", authenticateToken, async (req, res) => {
   let connection;
   try {
-    const { cod_mas, fech_his, descrip_his, tratamiento } = req.body;
-    
-    // Validaciones
-    if (!cod_mas || !fech_his || !descrip_his || !tratamiento) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Todos los campos son obligatorios" 
-      });
-    }
-    
-    connection = await pool.getConnection();
-    
-    // Usar el procedimiento almacenado CrearHistorialMedico
-    await connection.query(`CALL CrearHistorialMedico(?, ?, ?, ?, @cod_his)`, [
-      fech_his,
-      descrip_his,
-      tratamiento,
-      cod_mas
-    ]);
-
-    // Obtener el ID generado
-    const [[result]] = await connection.query(`SELECT @cod_his AS cod_his`);
-    const cod_his = result.cod_his;
-
-    res.status(201).json({ 
-      success: true, 
-      message: "Historial médico creado exitosamente", 
-      cod_his: cod_his 
-    });
+      const { cod_mas, fecha, descripcion, tratamiento } = req.body;
+      connection = await pool.getConnection();
+      await connection.query("CALL CrearHistorial(?, ?, ?, ?)", [cod_mas, fecha, descripcion, tratamiento]);
+      res.status(201).json({ success: true, message: "Historial creado exitosamente" });
   } catch (error) {
-    console.error("Error al crear historial:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error al crear el historial", 
-      error: error.message 
-    });
+      console.error("Error al crear historial:", error);
+      res.status(500).json({ success: false, message: error.sqlMessage || "Error del servidor" });
   } finally {
-    if (connection) connection.release();
+      if (connection) connection.release();
   }
 });
 
-// Actualizar historial médico
+// ACTUALIZAR HISTORIAL 
 router.put("/:cod_his", authenticateToken, async (req, res) => {
   let connection;
   try {
-    const { cod_his } = req.params;
-    const { cod_mas, fech_his, descrip_his, tratamiento } = req.body;
-
-    // Validaciones
-    if (!cod_mas || !fech_his || !descrip_his || !tratamiento) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Todos los campos son obligatorios" 
-      });
-    }
-
-    connection = await pool.getConnection();
-    
-    // Usar el procedimiento almacenado ActualizarHistorialMedico
-    await connection.query(`CALL ActualizarHistorialMedico(?, ?, ?, ?, ?)`, [
-      cod_his,
-      fech_his,
-      descrip_his,
-      tratamiento,
-      cod_mas
-    ]);
-
-    res.json({ 
-      success: true, 
-      message: "Historial actualizado exitosamente" 
-    });
+      const { cod_his } = req.params;
+      const { fecha, descripcion, tratamiento } = req.body;
+      connection = await pool.getConnection();
+      await connection.query("CALL ActualizarHistorial(?, ?, ?, ?)", [cod_his, fecha, descripcion, tratamiento]);
+      res.json({ success: true, message: "Historial actualizado exitosamente" });
   } catch (error) {
-    console.error("Error al actualizar historial:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error al actualizar el historial", 
-      error: error.message 
-    });
+      console.error("Error al actualizar historial:", error);
+      res.status(500).json({ success: false, message: error.sqlMessage || "Error del servidor" });
   } finally {
-    if (connection) connection.release();
+      if (connection) connection.release();
   }
 });
-
 // Obtener historiales por mascota
 router.get("/mascota/:cod_mas", authenticateToken, async (req, res) => {
   let connection;
@@ -210,38 +119,19 @@ router.get("/:cod_his", authenticateToken, async (req, res) => {
   }
 });
 
-// Eliminar historial médico
+// ELIMINAR HISTORIAL
 router.delete("/:cod_his", authenticateToken, async (req, res) => {
   let connection;
   try {
-    const { cod_his } = req.params;
-    const { cod_mas } = req.body; // Necesario para el procedimiento almacenado
-    
-    if (!cod_mas) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "El código de la mascota es requerido" 
-      });
-    }
-    
-    connection = await pool.getConnection();
-    
-    // Usar el procedimiento almacenado EliminarHistorialMedico
-    await connection.query(`CALL EliminarHistorialMedico(?, ?)`, [cod_his, cod_mas]);
-    
-    res.json({ 
-      success: true, 
-      message: "Historial eliminado exitosamente" 
-    });
+      const { cod_his } = req.params;
+      connection = await pool.getConnection();
+      await connection.query("CALL EliminarHistorial(?)", [cod_his]);
+      res.json({ success: true, message: "Historial eliminado exitosamente" });
   } catch (error) {
-    console.error("Error al eliminar historial:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error al eliminar el historial", 
-      error: error.message 
-    });
+      console.error("Error al eliminar historial:", error);
+      res.status(500).json({ success: false, message: error.sqlMessage || "Error del servidor" });
   } finally {
-    if (connection) connection.release();
+      if (connection) connection.release();
   }
 });
 
